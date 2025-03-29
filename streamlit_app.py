@@ -74,7 +74,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
 
                 # Generate an answer using the OpenAI API
                 response = client.responses.create(
-                    model="gpt-4o",
+                    model="gpt-4o-mini",
                     input=[
                         {
                             "role": "system",
