@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import base64
 from io import BytesIO
 import json
+import pandas as pd
 
 # Load environment variables (for local development)
 load_dotenv()
@@ -190,8 +191,55 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                         "Rationale": "Average of all criteria scores"
                     })
                     
-                    # Display results as a table
-                    st.table(results_data)
+                    # Convert to DataFrame
+                    df = pd.DataFrame(results_data)
+                    
+                    # Create HTML table with custom column widths
+                    html = f"""
+                    <style>
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
+                    th, td {{
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }}
+                    th {{
+                        background-color: #f2f2f2;
+                    }}
+                    .col1 {{
+                        width: 20%;
+                    }}
+                    .col2 {{
+                        width: 15%;
+                    }}
+                    .col3 {{
+                        width: 65%;
+                    }}
+                    </style>
+                    <table>
+                        <tr>
+                            <th class="col1">Criteria</th>
+                            <th class="col2">Score</th>
+                            <th class="col3">Rationale</th>
+                        </tr>
+                    """
+                    
+                    for _, row in df.iterrows():
+                        html += f"""
+                        <tr>
+                            <td class="col1">{row['Criteria']}</td>
+                            <td class="col2">{row['Score']}</td>
+                            <td class="col3">{row['Rationale']}</td>
+                        </tr>
+                        """
+                    
+                    html += "</table>"
+                    
+                    # Display the HTML table
+                    st.markdown(html, unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
@@ -279,8 +327,55 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                         "Rationale": "Average of all criteria scores"
                     })
                     
-                    # Display results as a table
-                    st.table(results_data)
+                    # Convert to DataFrame
+                    df = pd.DataFrame(results_data)
+                    
+                    # Create HTML table with custom column widths
+                    html = f"""
+                    <style>
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
+                    th, td {{
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }}
+                    th {{
+                        background-color: #f2f2f2;
+                    }}
+                    .col1 {{
+                        width: 20%;
+                    }}
+                    .col2 {{
+                        width: 15%;
+                    }}
+                    .col3 {{
+                        width: 65%;
+                    }}
+                    </style>
+                    <table>
+                        <tr>
+                            <th class="col1">Criteria</th>
+                            <th class="col2">Score</th>
+                            <th class="col3">Rationale</th>
+                        </tr>
+                    """
+                    
+                    for _, row in df.iterrows():
+                        html += f"""
+                        <tr>
+                            <td class="col1">{row['Criteria']}</td>
+                            <td class="col2">{row['Score']}</td>
+                            <td class="col3">{row['Rationale']}</td>
+                        </tr>
+                        """
+                    
+                    html += "</table>"
+                    
+                    # Display the HTML table
+                    st.markdown(html, unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
