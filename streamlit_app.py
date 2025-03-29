@@ -688,10 +688,34 @@ with tab2:
                 df_plot = pd.DataFrame(plot_data)
                 df_plot['date'] = pd.to_datetime(df_plot['date'])
                 
+                # Add padding to x-axis
+                if len(df_plot) > 0:
+                    # Get min and max dates
+                    min_date = df_plot['date'].min()
+                    max_date = df_plot['date'].max()
+                    
+                    # Calculate padding (10% of the date range, or 30 days if only one date)
+                    if len(df_plot) > 1:
+                        date_range = (max_date - min_date).days
+                        padding_days = max(30, int(date_range * 0.1))
+                    else:
+                        padding_days = 30
+                    
+                    # Add padding to domain
+                    x_domain = [min_date - pd.Timedelta(days=padding_days), 
+                               max_date + pd.Timedelta(days=padding_days)]
+                else:
+                    # Default domain if no data
+                    x_domain = None
+                
                 # Create scatter plot with Altair
                 scatter = alt.Chart(df_plot).mark_circle(size=100).encode(
-                    x=alt.X('date:T', title='Date Artwork Created'),
-                    y=alt.Y('score:Q', title='Average Score', scale=alt.Scale(domain=[0, 20])),
+                    x=alt.X('date:T', 
+                           title='Date Artwork Created',
+                           scale=alt.Scale(domain=x_domain)),
+                    y=alt.Y('score:Q', 
+                           title='Average Score', 
+                           scale=alt.Scale(domain=[0, 20])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
                     tooltip=[
                         alt.Tooltip('title', title='Title'),
@@ -705,17 +729,8 @@ with tab2:
                     height=300
                 ).interactive()
                 
-                # Add trendline if we have more than 2 data points
-                if len(df_plot) > 2:
-                    line = alt.Chart(df_plot).mark_line(color='red', strokeDash=[5, 5]).encode(
-                        x='date:T',
-                        y='mean(score):Q'
-                    )
-                    chart = scatter + line
-                else:
-                    chart = scatter
-                
-                st.altair_chart(chart, use_container_width=True)
+                # Display the chart (no trend line)
+                st.altair_chart(scatter, use_container_width=True)
                 
                 # Add some insights if possible
                 if len(df_plot) > 1:
