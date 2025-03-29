@@ -204,10 +204,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                                     ('border', '1px solid #ddd'),
                                                     ('padding', '8px'),
                                                     ('text-align', 'left')]},
-                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]},
-                        {'selector': '.col1', 'props': [('width', '20%')]},
-                        {'selector': '.col2', 'props': [('width', '15%')]},
-                        {'selector': '.col3', 'props': [('width', '65%')]},
+                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]}
                     ]).hide(axis="index")
                     
                     # Display the styled table
@@ -218,6 +215,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                         border-collapse: collapse;
                         margin: 25px 0;
                         font-size: 0.9em;
+                        table-layout: fixed;
                     }
                     .styled-table thead tr {
                         background-color: #f2f2f2;
@@ -227,6 +225,18 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     .styled-table td {
                         padding: 12px 15px;
                         border: 1px solid #ddd;
+                    }
+                    .styled-table th:nth-child(1),
+                    .styled-table td:nth-child(1) {
+                        width: 100px;
+                    }
+                    .styled-table th:nth-child(2),
+                    .styled-table td:nth-child(2) {
+                        width: 50px;
+                    }
+                    .styled-table th:nth-child(3),
+                    .styled-table td:nth-child(3) {
+                        width: auto;
                     }
                     </style>
                     """, unsafe_allow_html=True)
@@ -331,10 +341,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                                     ('border', '1px solid #ddd'),
                                                     ('padding', '8px'),
                                                     ('text-align', 'left')]},
-                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]},
-                        {'selector': '.col1', 'props': [('width', '20%')]},
-                        {'selector': '.col2', 'props': [('width', '15%')]},
-                        {'selector': '.col3', 'props': [('width', '65%')]},
+                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]}
                     ]).hide(axis="index")
                     
                     # Display the styled table
@@ -345,6 +352,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                         border-collapse: collapse;
                         margin: 25px 0;
                         font-size: 0.9em;
+                        table-layout: fixed;
                     }
                     .styled-table thead tr {
                         background-color: #f2f2f2;
@@ -354,6 +362,18 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     .styled-table td {
                         padding: 12px 15px;
                         border: 1px solid #ddd;
+                    }
+                    .styled-table th:nth-child(1),
+                    .styled-table td:nth-child(1) {
+                        width: 100px;
+                    }
+                    .styled-table th:nth-child(2),
+                    .styled-table td:nth-child(2) {
+                        width: 50px;
+                    }
+                    .styled-table th:nth-child(3),
+                    .styled-table td:nth-child(3) {
+                        width: auto;
                     }
                     </style>
                     """, unsafe_allow_html=True)
