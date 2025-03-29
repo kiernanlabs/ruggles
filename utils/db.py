@@ -5,11 +5,17 @@ import streamlit as st
 # Initialize Supabase client
 @st.cache_resource
 def init_supabase() -> Client:
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
+    try:
+        # Try to get credentials from Streamlit secrets
+        supabase_url = st.secrets["SUPABASE_URL"]
+        supabase_key = st.secrets["SUPABASE_KEY"]
+    except:
+        # Fall back to environment variables
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
     
     if not supabase_url or not supabase_key:
-        st.error("Missing Supabase credentials. Please set SUPABASE_URL and SUPABASE_KEY environment variables.")
+        st.error("Missing Supabase credentials. Please set SUPABASE_URL and SUPABASE_KEY in your Streamlit secrets or environment variables.")
         return None
     
     return create_client(supabase_url, supabase_key)

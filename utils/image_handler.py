@@ -8,10 +8,21 @@ import streamlit as st
 # Configure Cloudinary
 @st.cache_resource
 def init_cloudinary():
+    try:
+        # Try to get credentials from Streamlit secrets
+        cloud_name = st.secrets["CLOUDINARY_CLOUD_NAME"]
+        api_key = st.secrets["CLOUDINARY_API_KEY"]
+        api_secret = st.secrets["CLOUDINARY_API_SECRET"]
+    except:
+        # Fall back to environment variables
+        cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+        api_key = os.getenv('CLOUDINARY_API_KEY')
+        api_secret = os.getenv('CLOUDINARY_API_SECRET')
+    
     cloudinary.config(
-        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-        api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=os.getenv('CLOUDINARY_API_SECRET')
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret
     )
 
 def upload_image(image_file, folder="artwork"):

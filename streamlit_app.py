@@ -4,18 +4,25 @@ from utils.image_handler import upload_image
 from utils.db import insert_artwork, get_all_artworks
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables (for local development)
+load_dotenv()
 
 # Show title and description
 st.title("🎨 Artwork Analysis")
 st.write(
-    "Upload an artwork image and ask questions about it – GPT will analyze the image and answer your questions! "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
+    "Upload an artwork image and ask questions about it – GPT will analyze the image and answer your questions!"
 )
 
-# Ask user for their OpenAI API key
-openai_api_key = st.text_input("OpenAI API Key", type="password")
+# Get OpenAI API key from Streamlit secrets or environment
+try:
+    openai_api_key = st.secrets["OPENAI_API_KEY"]
+except:
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+
 if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+    st.error("OpenAI API key not found. Please set OPENAI_API_KEY in your Streamlit secrets or .env file.")
 else:
     # Create an OpenAI client
     client = OpenAI(api_key=openai_api_key)
