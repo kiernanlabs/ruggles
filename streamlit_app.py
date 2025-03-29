@@ -38,7 +38,7 @@ else:
 
     # Display the uploaded image if available
     if uploaded_file:
-        st.image(uploaded_file, caption="Uploaded Artwork", width=400)
+        st.image(uploaded_file, caption="Uploaded Artwork", height=300)
 
     # Get artist name
     artist_name = st.text_input(
@@ -137,6 +137,6 @@ else:
     if artworks and artworks.data:
         for artwork in artworks.data:
             with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
-                st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
+                st.image(artwork['image_url'], caption=artwork['title'], height=300)
                 st.write("**Question:**", artwork['question'])
                 st.write("**Analysis:**", artwork['gpt_response'])
