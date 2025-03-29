@@ -669,11 +669,11 @@ with tab2:
                     if scores:
                         avg_score = sum(scores) / len(scores)
                         
-                        # Extract date from created_at
-                        created_date = artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at']
+                        # Extract date from artwork_date (when the art was created) instead of created_at (when it was uploaded)
+                        artwork_date = artwork.get('artwork_date', artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at'])
                         
                         plot_data.append({
-                            'date': created_date,
+                            'date': artwork_date,
                             'score': avg_score,
                             'artist': artwork.get('artist_name', 'Unknown'),
                             'title': artwork.get('title', 'Untitled'),
@@ -690,10 +690,16 @@ with tab2:
                 
                 # Create scatter plot with Altair
                 scatter = alt.Chart(df_plot).mark_circle(size=100).encode(
-                    x=alt.X('date:T', title='Date Created'),
+                    x=alt.X('date:T', title='Date Artwork Created'),
                     y=alt.Y('score:Q', title='Average Score', scale=alt.Scale(domain=[0, 20])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
-                    tooltip=['title', 'date', 'score', 'artist', 'sketch_type']
+                    tooltip=[
+                        alt.Tooltip('title', title='Title'),
+                        alt.Tooltip('date', title='Date Created', format='%Y-%m-%d'),
+                        alt.Tooltip('score', title='Score', format='.1f'),
+                        alt.Tooltip('artist', title='Artist'),
+                        alt.Tooltip('sketch_type', title='Evaluation Type')
+                    ]
                 ).properties(
                     width=700,
                     height=300
