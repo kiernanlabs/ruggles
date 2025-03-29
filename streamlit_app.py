@@ -58,16 +58,15 @@ with tab1:
         if uploaded_file:
             st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
             
-        # Add slider for sketch type
-        sketch_type_value = st.slider(
-            "Evaluation Type",
-            min_value=0, 
-            max_value=1, 
-            value=1,
-            format=None,
-            help="Quick sketch focuses on fundamental aspects, while Full Realism evaluates all criteria"
-        )
-        sketch_type = "quick sketch" if sketch_type_value == 0 else "full realism"
+        # Add toggle for sketch type
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col1:
+            st.write("**Quick Sketch**")
+        with col2:
+            sketch_type_value = st.toggle("Evaluation Type", value=True)
+            sketch_type = "full realism" if sketch_type_value else "quick sketch"
+        with col3:
+            st.write("**Full Realism**")
         
         # Display selected mode
         if sketch_type == "quick sketch":
