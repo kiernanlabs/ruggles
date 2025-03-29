@@ -36,6 +36,10 @@ else:
         help="Upload an image of artwork to analyze"
     )
 
+    # Display the uploaded image if available
+    if uploaded_file:
+        st.image(uploaded_file, caption="Uploaded Artwork", width=400)
+
     # Get artist name
     artist_name = st.text_input(
         "Artist Name",
@@ -49,10 +53,6 @@ else:
         placeholder="What style is this artwork in? What emotions does it convey?",
         disabled=not uploaded_file,
     )
-
-    # Display the uploaded image if available
-    if uploaded_file:
-        st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
 
     # Analyze Artwork button (disabled until all fields are filled)
     if st.button("Analyze Artwork", disabled=not (uploaded_file and question and artist_name)):
