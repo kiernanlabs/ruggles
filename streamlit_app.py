@@ -14,7 +14,6 @@ import pandas as pd
 st.set_page_config(
     page_title="Ruggles Art Evaluation",
     page_icon="🎨",
-    layout="wide"
 )
 
 # Load environment variables (for local development)
@@ -454,11 +453,16 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         
                         avg_score = sum(scores) / len(scores)
                         
-                        # Add average score row
+                        # Add average score row with a note about which criteria were included
+                        if sketch_type == 'quick sketch':
+                            avg_note = "Average of Quick Sketch criteria (4 aspects)"
+                        else:
+                            avg_note = "Average of Full Realism criteria (8 aspects)"
+                            
                         results_data.append({
                             "Criteria": "Average Score",
                             "Score": f"{avg_score:.1f}/20",
-                            "Rationale": "Average of all criteria scores"
+                            "Rationale": avg_note
                         })
                         
                         # Convert to DataFrame
@@ -608,33 +612,35 @@ with tab2:
             if 'evaluation_data' in artwork:
                 evaluation_data = artwork['evaluation_data']
                 
-                # Calculate average score (handling both old and new format and sketch type)
+                # Calculate average score based on sketch type
                 scores = []
+                
+                # Always include core criteria if they exist
                 if 'proportion_and_structure' in evaluation_data:
                     scores.append(evaluation_data['proportion_and_structure']['score'])
                 if 'line_quality' in evaluation_data:
                     scores.append(evaluation_data['line_quality']['score'])
-                
-                # Only include these criteria if they exist
-                if 'value_and_light' in evaluation_data:
-                    scores.append(evaluation_data['value_and_light']['score'])
-                if 'detail_and_texture' in evaluation_data:
-                    scores.append(evaluation_data['detail_and_texture']['score'])
-                if 'composition_and_perspective' in evaluation_data:
-                    scores.append(evaluation_data['composition_and_perspective']['score'])
-                
                 if 'form_and_volume' in evaluation_data:
                     scores.append(evaluation_data['form_and_volume']['score'])
                 if 'mood_and_expression' in evaluation_data:
                     scores.append(evaluation_data['mood_and_expression']['score'])
                 
-                if 'overall_realism' in evaluation_data:
-                    scores.append(evaluation_data['overall_realism']['score'])
+                # Only include full realism criteria if the sketch type is full realism
+                sketch_type = artwork.get('sketch_type', 'full realism')  # Default to full realism for backwards compatibility
+                if sketch_type == 'full realism':
+                    if 'value_and_light' in evaluation_data:
+                        scores.append(evaluation_data['value_and_light']['score'])
+                    if 'detail_and_texture' in evaluation_data:
+                        scores.append(evaluation_data['detail_and_texture']['score'])
+                    if 'composition_and_perspective' in evaluation_data:
+                        scores.append(evaluation_data['composition_and_perspective']['score'])
+                    if 'overall_realism' in evaluation_data:
+                        scores.append(evaluation_data['overall_realism']['score'])
                 
                 if scores:
                     avg_score = sum(scores) / len(scores)
                     avg_score_text = f" - Avg Score: {avg_score:.1f}/20"
-                
+            
             # Format the date to show only YYYY-MM-DD
             created_date = artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at']
             
@@ -728,11 +734,16 @@ with tab2:
                     # Calculate average score based on available criteria
                     if scores:
                         avg_score = sum(scores) / len(scores)
-                        # Add average score row
+                        # Add average score row with a note about which criteria were included
+                        if sketch_type == 'quick sketch':
+                            avg_note = "Average of Quick Sketch criteria (4 aspects)"
+                        else:
+                            avg_note = "Average of Full Realism criteria (8 aspects)"
+                            
                         results_data.append({
                             "Criteria": "Average Score",
                             "Score": f"{avg_score:.1f}/20",
-                            "Rationale": "Average of all criteria scores"
+                            "Rationale": avg_note
                         })
                     
                     # Convert to DataFrame
