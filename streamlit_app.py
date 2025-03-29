@@ -110,7 +110,7 @@ with tab1:
 A 1–3 sentence rationale explaining the score.
 A set of 1–3 actionable tips for how the artist could improve in that specific area.
 
-Also, please create a descriptive and creative title for this artwork based on what you see.
+Also, please create a creative title for this artwork based on what you see.
 
 Evaluation Criteria:
 Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
@@ -139,7 +139,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         "properties": {
                             "generated_title": {
                                 "type": "string",
-                                "description": "A creative and descriptive title for the artwork"
+                                "description": "A creative title for the artwork"
                             },
                             "proportion_and_structure": {
                                 "type": "object",
