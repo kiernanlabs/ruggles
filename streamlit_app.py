@@ -50,7 +50,7 @@ else:
 
     if uploaded_file and question and artist_name:
         # Display the uploaded image
-        st.image(uploaded_file, caption="Uploaded Artwork", use_column_width=True)
+        st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
 
         if st.button("Analyze Artwork"):
             with st.spinner("Analyzing artwork and generating response..."):
@@ -72,7 +72,7 @@ else:
 
                     # Generate an answer using the OpenAI API
                     stream = client.chat.completions.create(
-                        model="gpt-4-vision-preview",
+                        model="gpt-4o-mini-2024-07-18",
                         messages=messages,
                         max_tokens=500,
                         stream=True,
@@ -108,6 +108,6 @@ else:
     if artworks and artworks.data:
         for artwork in artworks.data:
             with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
-                st.image(artwork['image_url'], caption=artwork['title'])
+                st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
                 st.write("**Question:**", artwork['question'])
                 st.write("**Analysis:**", artwork['gpt_response'])
