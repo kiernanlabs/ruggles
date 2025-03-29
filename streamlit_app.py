@@ -684,9 +684,20 @@ with tab2:
             if plot_data:
                 st.subheader("Score Progression Over Time")
                 
+                # Debug date information
+                with st.expander("Debug Date Information (click to expand)"):
+                    st.write("Raw date values extracted from artworks:")
+                    for item in plot_data:
+                        st.write(f"Title: {item['title']}, Raw date: {item['date']}")
+                    
                 # Convert to DataFrame for plotting
                 df_plot = pd.DataFrame(plot_data)
-                df_plot['date'] = pd.to_datetime(df_plot['date'])
+                
+                # Make sure dates are properly parsed
+                df_plot['date'] = pd.to_datetime(df_plot['date'], errors='coerce')
+                
+                # Drop any rows with invalid dates
+                df_plot = df_plot.dropna(subset=['date'])
                 
                 # Add padding to x-axis
                 if len(df_plot) > 0:
@@ -694,28 +705,42 @@ with tab2:
                     min_date = df_plot['date'].min()
                     max_date = df_plot['date'].max()
                     
-                    # Calculate padding (10% of the date range, or 30 days if only one date)
-                    if len(df_plot) > 1:
-                        date_range = (max_date - min_date).days
-                        padding_days = max(30, int(date_range * 0.1))
-                    else:
-                        padding_days = 30
+                    # Add a default range if min and max are the same
+                    if min_date == max_date:
+                        # If only one date, create a 60-day window centered on that date
+                        min_date = min_date - pd.Timedelta(days=30)
+                        max_date = max_date + pd.Timedelta(days=30)
+                    
+                    # Calculate padding (15% of the date range on each side)
+                    date_range = (max_date - min_date).days
+                    padding_days = max(30, int(date_range * 0.15))
                     
                     # Add padding to domain
-                    x_domain = [min_date - pd.Timedelta(days=padding_days), 
-                               max_date + pd.Timedelta(days=padding_days)]
+                    x_min = min_date - pd.Timedelta(days=padding_days)
+                    x_max = max_date + pd.Timedelta(days=padding_days)
+                    x_domain = [x_min, x_max]
+                    
+                    # Make sure the domain is properly formatted for Altair
+                    x_domain = [d.isoformat() for d in x_domain]
+                    
+                    # Debug domain information
+                    with st.expander("Debug Domain Information (click to expand)"):
+                        st.write(f"Min date: {min_date}")
+                        st.write(f"Max date: {max_date}")
+                        st.write(f"Padding days: {padding_days}")
+                        st.write(f"Computed domain: {x_domain}")
                 else:
                     # Default domain if no data
                     x_domain = None
                 
                 # Create scatter plot with Altair
-                scatter = alt.Chart(df_plot).mark_circle(size=100).encode(
+                base = alt.Chart(df_plot).encode(
                     x=alt.X('date:T', 
-                           title='Date Artwork Created',
-                           scale=alt.Scale(domain=x_domain)),
+                          title='Date Artwork Created',
+                          scale=alt.Scale(domain=x_domain, nice=True, padding=50)),
                     y=alt.Y('score:Q', 
-                           title='Average Score', 
-                           scale=alt.Scale(domain=[0, 20])),
+                          title='Average Score', 
+                          scale=alt.Scale(domain=[0, 20])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
                     tooltip=[
                         alt.Tooltip('title', title='Title'),
@@ -724,13 +749,24 @@ with tab2:
                         alt.Tooltip('artist', title='Artist'),
                         alt.Tooltip('sketch_type', title='Evaluation Type')
                     ]
-                ).properties(
+                )
+                
+                # Create circle marks with the base encoding
+                scatter = base.mark_circle(size=100).properties(
                     width=700,
                     height=300
                 ).interactive()
                 
-                # Display the chart (no trend line)
-                st.altair_chart(scatter, use_container_width=True)
+                # Add rule marks for better visual alignment
+                rule = base.mark_rule(color='lightgray').encode(
+                    x='date:T'
+                )
+                
+                # Combine the scatter plot and rules
+                chart = scatter 
+                
+                # Display the chart
+                st.altair_chart(chart, use_container_width=True)
                 
                 # Add some insights if possible
                 if len(df_plot) > 1:
