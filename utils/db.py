@@ -2,6 +2,11 @@ import os
 from supabase import create_client, Client
 import streamlit as st
 from datetime import datetime
+import json
+from dotenv import load_dotenv
+
+# Load environment variables (for local development)
+load_dotenv()
 
 # Initialize Supabase client
 @st.cache_resource
@@ -81,6 +86,7 @@ def insert_artwork(artwork_data: dict):
                 "image_public_id": artwork_data.get('image_public_id', ''),
                 "artist_name": artwork_data.get('artist_name', ''),
                 "created_at": artwork_data.get('created_at', datetime.now().isoformat()),
+                "artwork_date": artwork_data.get('artwork_date', datetime.now().strftime('%Y-%m-%d')),
                 "question": artwork_data.get('question', ''),
                 "gpt_response": gpt_response,
                 
