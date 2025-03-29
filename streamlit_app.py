@@ -15,7 +15,7 @@ load_dotenv()
 # Show title and description
 st.title("🎨 Artwork Analysis")
 st.write(
-    "Upload an artwork image and ask questions about it – GPT will analyze the image and answer your questions!"
+    "Upload an artwork image for evaluation!"
 )
 
 # Get OpenAI API key from Streamlit secrets or environment
@@ -54,21 +54,8 @@ else:
             disabled=True
         )
 
-    # Ask the user for a question about the image
-    if uploaded_file is not None:
-        question = st.text_area(
-            "Ask a question about the artwork!",
-            placeholder="What style is this artwork in? What emotions does it convey?"
-        )
-    else:
-        question = st.text_area(
-            "Ask a question about the artwork!",
-            placeholder="Upload an image first",
-            disabled=True
-        )
-
     # Analyze Artwork button (disabled until all fields are filled)
-    if st.button("Analyze Artwork", disabled=not (uploaded_file and question and artist_name)):
+    if st.button("Analyze Artwork", disabled=not (uploaded_file and artist_name)):
         with st.spinner("Analyzing artwork and generating response..."):
             # Read the file once
             image_bytes = uploaded_file.read()
@@ -105,7 +92,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                             "content": [
                                 {
                                     "type": "input_text",
-                                    "text": f"Here's an artwork by {artist_name}. {question}"
+                                    "text": f"Here's an artwork by {artist_name}."
                                 },
                                 {
                                     "type": "input_image",
@@ -200,12 +187,12 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Store the data in the database
                     artwork_data = {
                         "title": uploaded_file.name,
-                        "description": question,
+                        "description": "Standard evaluation v0",
                         "image_url": image_data["url"],
                         "image_public_id": image_data["public_id"],
                         "artist_name": artist_name,
                         "created_at": datetime.now().isoformat(),
-                        "question": question,
+                        "question": "Standard evaluation v0",
                         "gpt_response": response.output_text,
                         "evaluation_data": evaluation_data
                     }
@@ -224,7 +211,6 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
         for artwork in artworks.data:
             with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
                 st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
-                st.write("**Question:**", artwork['question'])
                 
                 # Display evaluation data if available
                 if 'evaluation_data' in artwork:
