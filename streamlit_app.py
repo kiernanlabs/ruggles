@@ -106,19 +106,18 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                         "properties": {
                                             "score": {
                                                 "type": "integer",
-                                                "minimum": 1,
-                                                "maximum": 20
+                                                "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
                                             },
                                             "rationale": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "1-3 sentence explanation for the score"
                                             },
                                             "improvement_tips": {
                                                 "type": "array",
                                                 "items": {
                                                     "type": "string"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 3
+                                                "description": "1-3 actionable tips for improvement"
                                             }
                                         },
                                         "required": ["score", "rationale", "improvement_tips"],
@@ -129,19 +128,18 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                         "properties": {
                                             "score": {
                                                 "type": "integer",
-                                                "minimum": 1,
-                                                "maximum": 20
+                                                "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
                                             },
                                             "rationale": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "1-3 sentence explanation for the score"
                                             },
                                             "improvement_tips": {
                                                 "type": "array",
                                                 "items": {
                                                     "type": "string"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 3
+                                                "description": "1-3 actionable tips for improvement"
                                             }
                                         },
                                         "required": ["score", "rationale", "improvement_tips"],
