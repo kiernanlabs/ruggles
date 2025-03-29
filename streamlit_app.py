@@ -1,53 +1,106 @@
 import streamlit as st
 from openai import OpenAI
+from utils.image_handler import upload_image
+from utils.db import insert_artwork, get_all_artworks
+import os
+from datetime import datetime
 
-# Show title and description.
-st.title("📄 Document question answering")
+# Show title and description
+st.title("🎨 Artwork Analysis")
 st.write(
-    "Upload a document below and ask a question about it – GPT will answer! "
+    "Upload an artwork image and ask questions about it – GPT will analyze the image and answer your questions! "
     "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
+# Ask user for their OpenAI API key
 openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
-
-    # Create an OpenAI client.
+    # Create an OpenAI client
     client = OpenAI(api_key=openai_api_key)
 
-    # Let the user upload a file via `st.file_uploader`.
+    # Let the user upload an image
     uploaded_file = st.file_uploader(
-        "Upload a document (.txt or .md)", type=("txt", "md")
+        "Upload an artwork image", 
+        type=["png", "jpg", "jpeg"],
+        help="Upload an image of artwork to analyze"
     )
 
-    # Ask the user for a question via `st.text_area`.
+    # Get artist name
+    artist_name = st.text_input(
+        "Artist Name",
+        placeholder="Enter the artist's name",
+        disabled=not uploaded_file
+    )
+
+    # Ask the user for a question about the image
     question = st.text_area(
-        "Now ask a question about the document!",
-        placeholder="Can you give me a short summary?",
+        "Ask a question about the artwork!",
+        placeholder="What style is this artwork in? What emotions does it convey?",
         disabled=not uploaded_file,
     )
 
-    if uploaded_file and question:
+    if uploaded_file and question and artist_name:
+        # Display the uploaded image
+        st.image(uploaded_file, caption="Uploaded Artwork", use_column_width=True)
 
-        # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
-        messages = [
-            {
-                "role": "user",
-                "content": f"Here's a document: {document} \n\n---\n\n {question}",
-            }
-        ]
+        if st.button("Analyze Artwork"):
+            with st.spinner("Analyzing artwork and generating response..."):
+                # Upload image to Cloudinary
+                image_data = upload_image(uploaded_file)
+                
+                if image_data:
+                    # Prepare the prompt for GPT
+                    messages = [
+                        {
+                            "role": "system",
+                            "content": "You are an expert art analyst. Analyze the artwork and answer the user's question thoughtfully and professionally."
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Here's an artwork by {artist_name}. {question}"
+                        }
+                    ]
 
-        # Generate an answer using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
+                    # Generate an answer using the OpenAI API
+                    stream = client.chat.completions.create(
+                        model="gpt-4-vision-preview",
+                        messages=messages,
+                        max_tokens=500,
+                        stream=True,
+                    )
 
-        # Stream the response to the app using `st.write_stream`.
-        st.write_stream(stream)
+                    # Stream the response
+                    response_text = ""
+                    response_container = st.empty()
+                    for chunk in stream:
+                        if chunk.choices[0].delta.content:
+                            response_text += chunk.choices[0].delta.content
+                            response_container.markdown(response_text)
+
+                    # Store the data in the database
+                    artwork_data = {
+                        "title": uploaded_file.name,
+                        "description": question,
+                        "image_url": image_data["url"],
+                        "image_public_id": image_data["public_id"],
+                        "artist_name": artist_name,
+                        "created_at": datetime.now().isoformat(),
+                        "question": question,
+                        "gpt_response": response_text
+                    }
+                    
+                    result = insert_artwork(artwork_data)
+                    if result:
+                        st.success("Analysis saved successfully!")
+
+    # Display previous analyses
+    st.subheader("Previous Analyses")
+    artworks = get_all_artworks()
+    if artworks and artworks.data:
+        for artwork in artworks.data:
+            with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
+                st.image(artwork['image_url'], caption=artwork['title'])
+                st.write("**Question:**", artwork['question'])
+                st.write("**Analysis:**", artwork['gpt_response'])
