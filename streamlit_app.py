@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 import base64
+from io import BytesIO
 
 # Load environment variables (for local development)
 load_dotenv()
@@ -64,6 +65,9 @@ else:
                 image_bytes = uploaded_file.read()
                 base64_image = base64.b64encode(image_bytes).decode('utf-8')
                 
+                # Get the file extension
+                file_extension = uploaded_file.type.split('/')[-1]
+                
                 # Prepare the prompt for GPT
                 messages = [
                     {
@@ -80,7 +84,7 @@ else:
                             {
                                 "type": "image_url",
                                 "image_url": {
-                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                    "url": f"data:image/{file_extension};base64,{base64_image}"
                                 }
                             }
                         ]
