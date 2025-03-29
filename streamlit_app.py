@@ -5,6 +5,7 @@ from utils.db import insert_artwork, get_all_artworks
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+import base64
 
 # Load environment variables (for local development)
 load_dotenv()
@@ -48,59 +49,75 @@ else:
         disabled=not uploaded_file,
     )
 
-    if uploaded_file and question and artist_name:
-        # Display the uploaded image
+    # Display the uploaded image if available
+    if uploaded_file:
         st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
 
-        if st.button("Analyze Artwork"):
-            with st.spinner("Analyzing artwork and generating response..."):
-                # Upload image to Cloudinary
-                image_data = upload_image(uploaded_file)
+    # Analyze Artwork button (disabled until all fields are filled)
+    if st.button("Analyze Artwork", disabled=not (uploaded_file and question and artist_name)):
+        with st.spinner("Analyzing artwork and generating response..."):
+            # Upload image to Cloudinary
+            image_data = upload_image(uploaded_file)
+            
+            if image_data:
+                # Convert the uploaded file to base64
+                image_bytes = uploaded_file.read()
+                base64_image = base64.b64encode(image_bytes).decode('utf-8')
                 
-                if image_data:
-                    # Prepare the prompt for GPT
-                    messages = [
-                        {
-                            "role": "system",
-                            "content": "You are an expert art analyst. Analyze the artwork and answer the user's question thoughtfully and professionally."
-                        },
-                        {
-                            "role": "user",
-                            "content": f"Here's an artwork by {artist_name}. {question}"
-                        }
-                    ]
-
-                    # Generate an answer using the OpenAI API
-                    stream = client.chat.completions.create(
-                        model="gpt-4o-mini-2024-07-18",
-                        messages=messages,
-                        max_tokens=500,
-                        stream=True,
-                    )
-
-                    # Stream the response
-                    response_text = ""
-                    response_container = st.empty()
-                    for chunk in stream:
-                        if chunk.choices[0].delta.content:
-                            response_text += chunk.choices[0].delta.content
-                            response_container.markdown(response_text)
-
-                    # Store the data in the database
-                    artwork_data = {
-                        "title": uploaded_file.name,
-                        "description": question,
-                        "image_url": image_data["url"],
-                        "image_public_id": image_data["public_id"],
-                        "artist_name": artist_name,
-                        "created_at": datetime.now().isoformat(),
-                        "question": question,
-                        "gpt_response": response_text
+                # Prepare the prompt for GPT
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are an expert art analyst. Analyze the artwork and answer the user's question thoughtfully and professionally."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"Here's an artwork by {artist_name}. {question}"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                            }
+                        ]
                     }
-                    
-                    result = insert_artwork(artwork_data)
-                    if result:
-                        st.success("Analysis saved successfully!")
+                ]
+
+                # Generate an answer using the OpenAI API
+                stream = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=messages,
+                    max_tokens=500,
+                    stream=True,
+                )
+
+                # Stream the response
+                response_text = ""
+                response_container = st.empty()
+                for chunk in stream:
+                    if chunk.choices[0].delta.content:
+                        response_text += chunk.choices[0].delta.content
+                        response_container.markdown(response_text)
+
+                # Store the data in the database
+                artwork_data = {
+                    "title": uploaded_file.name,
+                    "description": question,
+                    "image_url": image_data["url"],
+                    "image_public_id": image_data["public_id"],
+                    "artist_name": artist_name,
+                    "created_at": datetime.now().isoformat(),
+                    "question": question,
+                    "gpt_response": response_text
+                }
+                
+                result = insert_artwork(artwork_data)
+                if result:
+                    st.success("Analysis saved successfully!")
 
     # Display previous analyses
     st.subheader("Previous Analyses")
