@@ -194,52 +194,43 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Convert to DataFrame
                     df = pd.DataFrame(results_data)
                     
-                    # Create HTML table with custom column widths
-                    html = f"""
+                    # Use pandas styling to generate a styled HTML table
+                    styled_df = df.style.set_properties(**{
+                        'text-align': 'left',
+                        'border': '1px solid #ddd',
+                        'padding': '8px'
+                    }).set_table_styles([
+                        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), 
+                                                    ('border', '1px solid #ddd'),
+                                                    ('padding', '8px'),
+                                                    ('text-align', 'left')]},
+                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]},
+                        {'selector': '.col1', 'props': [('width', '20%')]},
+                        {'selector': '.col2', 'props': [('width', '15%')]},
+                        {'selector': '.col3', 'props': [('width', '65%')]},
+                    ]).hide(axis="index")
+                    
+                    # Display the styled table
+                    st.write("""
                     <style>
-                    table {{
+                    .styled-table {
                         width: 100%;
                         border-collapse: collapse;
-                    }}
-                    th, td {{
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }}
-                    th {{
+                        margin: 25px 0;
+                        font-size: 0.9em;
+                    }
+                    .styled-table thead tr {
                         background-color: #f2f2f2;
-                    }}
-                    .col1 {{
-                        width: 20%;
-                    }}
-                    .col2 {{
-                        width: 15%;
-                    }}
-                    .col3 {{
-                        width: 65%;
-                    }}
+                        text-align: left;
+                    }
+                    .styled-table th,
+                    .styled-table td {
+                        padding: 12px 15px;
+                        border: 1px solid #ddd;
+                    }
                     </style>
-                    <table>
-                        <tr>
-                            <th class="col1">Criteria</th>
-                            <th class="col2">Score</th>
-                            <th class="col3">Rationale</th>
-                        </tr>
-                    """
-                    
-                    for _, row in df.iterrows():
-                        html += f"""
-                        <tr>
-                            <td class="col1">{row['Criteria']}</td>
-                            <td class="col2">{row['Score']}</td>
-                            <td class="col3">{row['Rationale']}</td>
-                        </tr>
-                        """
-                    
-                    html += "</table>"
-                    
-                    # Display the HTML table
-                    st.write(html, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+                    st.write(styled_df.to_html(classes='styled-table'), unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
@@ -330,52 +321,43 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Convert to DataFrame
                     df = pd.DataFrame(results_data)
                     
-                    # Create HTML table with custom column widths
-                    html = f"""
+                    # Use pandas styling to generate a styled HTML table
+                    styled_df = df.style.set_properties(**{
+                        'text-align': 'left',
+                        'border': '1px solid #ddd',
+                        'padding': '8px'
+                    }).set_table_styles([
+                        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), 
+                                                    ('border', '1px solid #ddd'),
+                                                    ('padding', '8px'),
+                                                    ('text-align', 'left')]},
+                        {'selector': 'tr:hover', 'props': [('background-color', '#f9f9f9')]},
+                        {'selector': '.col1', 'props': [('width', '20%')]},
+                        {'selector': '.col2', 'props': [('width', '15%')]},
+                        {'selector': '.col3', 'props': [('width', '65%')]},
+                    ]).hide(axis="index")
+                    
+                    # Display the styled table
+                    st.write("""
                     <style>
-                    table {{
+                    .styled-table {
                         width: 100%;
                         border-collapse: collapse;
-                    }}
-                    th, td {{
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }}
-                    th {{
+                        margin: 25px 0;
+                        font-size: 0.9em;
+                    }
+                    .styled-table thead tr {
                         background-color: #f2f2f2;
-                    }}
-                    .col1 {{
-                        width: 20%;
-                    }}
-                    .col2 {{
-                        width: 15%;
-                    }}
-                    .col3 {{
-                        width: 65%;
-                    }}
+                        text-align: left;
+                    }
+                    .styled-table th,
+                    .styled-table td {
+                        padding: 12px 15px;
+                        border: 1px solid #ddd;
+                    }
                     </style>
-                    <table>
-                        <tr>
-                            <th class="col1">Criteria</th>
-                            <th class="col2">Score</th>
-                            <th class="col3">Rationale</th>
-                        </tr>
-                    """
-                    
-                    for _, row in df.iterrows():
-                        html += f"""
-                        <tr>
-                            <td class="col1">{row['Criteria']}</td>
-                            <td class="col2">{row['Score']}</td>
-                            <td class="col3">{row['Rationale']}</td>
-                        </tr>
-                        """
-                    
-                    html += "</table>"
-                    
-                    # Display the HTML table
-                    st.write(html, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+                    st.write(styled_df.to_html(classes='styled-table'), unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
