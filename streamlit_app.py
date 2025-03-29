@@ -122,7 +122,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                             }
                                         },
                                         "required": ["score", "rationale", "improvement_tips"],
-                                        "additionalProperties": false
+                                        "additionalProperties": False
                                     },
                                     "line_quality": {
                                         "type": "object",
@@ -145,11 +145,11 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                             }
                                         },
                                         "required": ["score", "rationale", "improvement_tips"],
-                                        "additionalProperties": false
+                                        "additionalProperties": False
                                     }
                                 },
                                 "required": ["proportion_and_structure", "line_quality"],
-                                "additionalProperties": false
+                                "additionalProperties": False
                             },
                             "strict": True
                         }
