@@ -110,6 +110,8 @@ with tab1:
 A 1–3 sentence rationale explaining the score.
 A set of 1–3 actionable tips for how the artist could improve in that specific area.
 
+Also, please create a descriptive and creative title for this artwork based on what you see.
+
 Evaluation Criteria:
 Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
 Line Quality – Are the lines confident, controlled, and varied to define form, contour, or texture effectively?"""
@@ -135,6 +137,10 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                     schema = {
                         "type": "object",
                         "properties": {
+                            "generated_title": {
+                                "type": "string",
+                                "description": "A creative and descriptive title for the artwork"
+                            },
                             "proportion_and_structure": {
                                 "type": "object",
                                 "properties": {
@@ -224,7 +230,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                                 "additionalProperties": False
                             }
                         },
-                        "required": ["proportion_and_structure", "line_quality", "form_and_volume", "mood_and_expression"],
+                        "required": ["generated_title", "proportion_and_structure", "line_quality", "form_and_volume", "mood_and_expression"],
                         "additionalProperties": False
                     }
                     
@@ -323,7 +329,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         }
                         
                         # Update required properties for full realism
-                        schema["required"] = ["proportion_and_structure", "line_quality", "value_and_light", 
+                        schema["required"] = ["generated_title", "proportion_and_structure", "line_quality", "value_and_light", 
                                               "detail_and_texture", "composition_and_perspective", 
                                               "form_and_volume", "mood_and_expression", "overall_realism"]
 
@@ -362,6 +368,10 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                     # Parse the response
                     try:
                         evaluation_data = json.loads(response.output_text)
+                        
+                        # Extract and display the generated title
+                        generated_title = evaluation_data.get('generated_title', 'Untitled')
+                        st.subheader(f"AI-Generated Title: \"{generated_title}\"")
                         
                         # Display the evaluation results
                         st.subheader("Artwork Evaluation")
@@ -578,7 +588,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         # Store the data in the database if checkbox is checked
                         if store_in_db:
                             artwork_data = {
-                                "title": uploaded_file.name,
+                                "title": generated_title,
                                 "description": "Standard evaluation v0",
                                 "image_url": image_data["url"],
                                 "image_public_id": image_data["public_id"],
@@ -683,7 +693,7 @@ with tab2:
                     x=alt.X('date:T', title='Date Created'),
                     y=alt.Y('score:Q', title='Average Score', scale=alt.Scale(domain=[0, 20])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
-                    tooltip=['date', 'score', 'artist', 'title', 'sketch_type']
+                    tooltip=['title', 'date', 'score', 'artist', 'sketch_type']
                 ).properties(
                     width=700,
                     height=300
@@ -759,7 +769,11 @@ with tab2:
             if 'sketch_type' in artwork:
                 sketch_type_display = f" - Type: {artwork['sketch_type'].title()}"
                 
-            with st.expander(f"Artwork by {artwork['artist_name']} - {created_date}{artwork_date_display}{sketch_type_display}{avg_score_text}"):
+            # Get title if available
+            artwork_title = artwork.get('title', 'Untitled')
+            title_display = f" - \"{artwork_title}\""
+                
+            with st.expander(f"Artwork by {artwork['artist_name']}{title_display} - {created_date}{artwork_date_display}{sketch_type_display}{avg_score_text}"):
                 st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
                 
                 # Display evaluation data if available
