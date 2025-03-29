@@ -30,6 +30,12 @@ else:
     # Create an OpenAI client
     client = OpenAI(api_key=openai_api_key)
 
+    # Get artist name first
+    artist_name = st.text_input(
+        "Artist Name",
+        placeholder="Enter the artist's name"
+    )
+
     # Let the user upload an image
     uploaded_file = st.file_uploader(
         "Upload an artwork image", 
@@ -40,19 +46,6 @@ else:
     # Display the uploaded image if available
     if uploaded_file:
         st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
-
-    # Get artist name
-    if uploaded_file is not None:
-        artist_name = st.text_input(
-            "Artist Name",
-            placeholder="Enter the artist's name"
-        )
-    else:
-        artist_name = st.text_input(
-            "Artist Name",
-            placeholder="Upload an image first",
-            disabled=True
-        )
 
     # Analyze Artwork button (disabled until all fields are filled)
     if st.button("Analyze Artwork", disabled=not (uploaded_file and artist_name)):
@@ -128,7 +121,8 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                                 "maxItems": 3
                                             }
                                         },
-                                        "required": ["score", "rationale", "improvement_tips"]
+                                        "required": ["score", "rationale", "improvement_tips"],
+                                        "additionalProperties": false
                                     },
                                     "line_quality": {
                                         "type": "object",
@@ -150,11 +144,12 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                                                 "maxItems": 3
                                             }
                                         },
-                                        "required": ["score", "rationale", "improvement_tips"]
+                                        "required": ["score", "rationale", "improvement_tips"],
+                                        "additionalProperties": false
                                     }
                                 },
                                 "required": ["proportion_and_structure", "line_quality"],
-                                "additionalProperties": False
+                                "additionalProperties": false
                             },
                             "strict": True
                         }
