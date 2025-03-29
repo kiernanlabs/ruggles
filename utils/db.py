@@ -57,6 +57,12 @@ def insert_artwork(artwork_data: dict):
     - evaluation_data: dict containing:
         - proportion_and_structure: dict with score, rationale, improvement_tips
         - line_quality: dict with score, rationale, improvement_tips
+        - value_and_light: dict with score, rationale, improvement_tips
+        - detail_and_texture: dict with score, rationale, improvement_tips
+        - composition_and_perspective: dict with score, rationale, improvement_tips
+        - form_and_volume: dict with score, rationale, improvement_tips
+        - mood_and_expression: dict with score, rationale, improvement_tips
+        - overall_realism: dict with score, rationale, improvement_tips
     """
     supabase = init_supabase()
     if supabase:
@@ -77,13 +83,41 @@ def insert_artwork(artwork_data: dict):
                 "created_at": artwork_data.get('created_at', datetime.now().isoformat()),
                 "question": artwork_data.get('question', ''),
                 "gpt_response": gpt_response,
+                
+                # Original evaluation criteria
                 'proportion_score': evaluation_data.get('proportion_and_structure', {}).get('score', 0),
                 'proportion_rationale': evaluation_data.get('proportion_and_structure', {}).get('rationale', ''),
                 'proportion_tips': evaluation_data.get('proportion_and_structure', {}).get('improvement_tips', []),
                 'line_quality_score': evaluation_data.get('line_quality', {}).get('score', 0),
                 'line_quality_rationale': evaluation_data.get('line_quality', {}).get('rationale', ''),
                 'line_quality_tips': evaluation_data.get('line_quality', {}).get('improvement_tips', []),
-                'evaluation_version': 'v0'
+                
+                # New evaluation criteria
+                'value_light_score': evaluation_data.get('value_and_light', {}).get('score', 0),
+                'value_light_rationale': evaluation_data.get('value_and_light', {}).get('rationale', ''),
+                'value_light_tips': evaluation_data.get('value_and_light', {}).get('improvement_tips', []),
+                
+                'detail_texture_score': evaluation_data.get('detail_and_texture', {}).get('score', 0),
+                'detail_texture_rationale': evaluation_data.get('detail_and_texture', {}).get('rationale', ''),
+                'detail_texture_tips': evaluation_data.get('detail_and_texture', {}).get('improvement_tips', []),
+                
+                'composition_perspective_score': evaluation_data.get('composition_and_perspective', {}).get('score', 0),
+                'composition_perspective_rationale': evaluation_data.get('composition_and_perspective', {}).get('rationale', ''),
+                'composition_perspective_tips': evaluation_data.get('composition_and_perspective', {}).get('improvement_tips', []),
+                
+                'form_volume_score': evaluation_data.get('form_and_volume', {}).get('score', 0),
+                'form_volume_rationale': evaluation_data.get('form_and_volume', {}).get('rationale', ''),
+                'form_volume_tips': evaluation_data.get('form_and_volume', {}).get('improvement_tips', []),
+                
+                'mood_expression_score': evaluation_data.get('mood_and_expression', {}).get('score', 0),
+                'mood_expression_rationale': evaluation_data.get('mood_and_expression', {}).get('rationale', ''),
+                'mood_expression_tips': evaluation_data.get('mood_and_expression', {}).get('improvement_tips', []),
+                
+                'overall_realism_score': evaluation_data.get('overall_realism', {}).get('score', 0),
+                'overall_realism_rationale': evaluation_data.get('overall_realism', {}).get('rationale', ''),
+                'overall_realism_tips': evaluation_data.get('overall_realism', {}).get('improvement_tips', []),
+                
+                'evaluation_version': 'v1'
             }
             
             return supabase.table("artworks").insert(data).execute()
@@ -115,7 +149,50 @@ def get_artwork_by_id(artwork_id: str):
                         'improvement_tips': artwork.pop('line_quality_tips', [])
                     }
                 }
-            
+                
+                # Add new evaluation criteria if they exist in the database
+                if 'value_light_score' in artwork:
+                    artwork['evaluation_data']['value_and_light'] = {
+                        'score': artwork.pop('value_light_score', 0),
+                        'rationale': artwork.pop('value_light_rationale', ''),
+                        'improvement_tips': artwork.pop('value_light_tips', [])
+                    }
+                
+                if 'detail_texture_score' in artwork:
+                    artwork['evaluation_data']['detail_and_texture'] = {
+                        'score': artwork.pop('detail_texture_score', 0),
+                        'rationale': artwork.pop('detail_texture_rationale', ''),
+                        'improvement_tips': artwork.pop('detail_texture_tips', [])
+                    }
+                
+                if 'composition_perspective_score' in artwork:
+                    artwork['evaluation_data']['composition_and_perspective'] = {
+                        'score': artwork.pop('composition_perspective_score', 0),
+                        'rationale': artwork.pop('composition_perspective_rationale', ''),
+                        'improvement_tips': artwork.pop('composition_perspective_tips', [])
+                    }
+                
+                if 'form_volume_score' in artwork:
+                    artwork['evaluation_data']['form_and_volume'] = {
+                        'score': artwork.pop('form_volume_score', 0),
+                        'rationale': artwork.pop('form_volume_rationale', ''),
+                        'improvement_tips': artwork.pop('form_volume_tips', [])
+                    }
+                
+                if 'mood_expression_score' in artwork:
+                    artwork['evaluation_data']['mood_and_expression'] = {
+                        'score': artwork.pop('mood_expression_score', 0),
+                        'rationale': artwork.pop('mood_expression_rationale', ''),
+                        'improvement_tips': artwork.pop('mood_expression_tips', [])
+                    }
+                
+                if 'overall_realism_score' in artwork:
+                    artwork['evaluation_data']['overall_realism'] = {
+                        'score': artwork.pop('overall_realism_score', 0),
+                        'rationale': artwork.pop('overall_realism_rationale', ''),
+                        'improvement_tips': artwork.pop('overall_realism_tips', [])
+                    }
+                
             return result
         except Exception as e:
             st.error(f"Error querying data: {str(e)}")
@@ -145,6 +222,49 @@ def get_all_artworks():
                             'improvement_tips': artwork.pop('line_quality_tips', [])
                         }
                     }
+                    
+                    # Add new evaluation criteria if they exist in the database
+                    if 'value_light_score' in artwork:
+                        artwork['evaluation_data']['value_and_light'] = {
+                            'score': artwork.pop('value_light_score', 0),
+                            'rationale': artwork.pop('value_light_rationale', ''),
+                            'improvement_tips': artwork.pop('value_light_tips', [])
+                        }
+                    
+                    if 'detail_texture_score' in artwork:
+                        artwork['evaluation_data']['detail_and_texture'] = {
+                            'score': artwork.pop('detail_texture_score', 0),
+                            'rationale': artwork.pop('detail_texture_rationale', ''),
+                            'improvement_tips': artwork.pop('detail_texture_tips', [])
+                        }
+                    
+                    if 'composition_perspective_score' in artwork:
+                        artwork['evaluation_data']['composition_and_perspective'] = {
+                            'score': artwork.pop('composition_perspective_score', 0),
+                            'rationale': artwork.pop('composition_perspective_rationale', ''),
+                            'improvement_tips': artwork.pop('composition_perspective_tips', [])
+                        }
+                    
+                    if 'form_volume_score' in artwork:
+                        artwork['evaluation_data']['form_and_volume'] = {
+                            'score': artwork.pop('form_volume_score', 0),
+                            'rationale': artwork.pop('form_volume_rationale', ''),
+                            'improvement_tips': artwork.pop('form_volume_tips', [])
+                        }
+                    
+                    if 'mood_expression_score' in artwork:
+                        artwork['evaluation_data']['mood_and_expression'] = {
+                            'score': artwork.pop('mood_expression_score', 0),
+                            'rationale': artwork.pop('mood_expression_rationale', ''),
+                            'improvement_tips': artwork.pop('mood_expression_tips', [])
+                        }
+                    
+                    if 'overall_realism_score' in artwork:
+                        artwork['evaluation_data']['overall_realism'] = {
+                            'score': artwork.pop('overall_realism_score', 0),
+                            'rationale': artwork.pop('overall_realism_rationale', ''),
+                            'improvement_tips': artwork.pop('overall_realism_tips', [])
+                        }
             
             return result
         except Exception as e:
