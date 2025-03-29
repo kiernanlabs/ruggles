@@ -57,12 +57,14 @@ else:
     # Analyze Artwork button (disabled until all fields are filled)
     if st.button("Analyze Artwork", disabled=not (uploaded_file and question and artist_name)):
         with st.spinner("Analyzing artwork and generating response..."):
-            # Upload image to Cloudinary
-            image_data = upload_image(uploaded_file)
+            # Read the file once
+            image_bytes = uploaded_file.read()
+            
+            # Upload image to Cloudinary using the bytes
+            image_data = upload_image(image_bytes)
             
             if image_data:
-                # Convert the uploaded file to base64
-                image_bytes = uploaded_file.read()
+                # Convert the bytes to base64
                 base64_image = base64.b64encode(image_bytes).decode('utf-8')
                 
                 # Get the file extension

@@ -4,6 +4,7 @@ import cloudinary.uploader
 import cloudinary.api
 from datetime import datetime
 import streamlit as st
+from io import BytesIO
 
 # Configure Cloudinary
 @st.cache_resource
@@ -28,10 +29,15 @@ def init_cloudinary():
 def upload_image(image_file, folder="artwork"):
     """
     Upload an image to Cloudinary and return the URL and public_id
+    Can handle both file objects and bytes
     """
     init_cloudinary()
     
     try:
+        # If image_file is bytes, create a BytesIO object
+        if isinstance(image_file, bytes):
+            image_file = BytesIO(image_file)
+        
         # Upload the image
         upload_result = cloudinary.uploader.upload(
             image_file,
