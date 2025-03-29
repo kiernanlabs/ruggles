@@ -10,6 +10,13 @@ from io import BytesIO
 import json
 import pandas as pd
 
+# Set page config (must be the first Streamlit command)
+st.set_page_config(
+    page_title="Ruggles Art Evaluation",
+    page_icon="🎨",
+    layout="wide"
+)
+
 # Load environment variables (for local development)
 load_dotenv()
 
