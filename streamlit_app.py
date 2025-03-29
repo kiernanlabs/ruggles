@@ -193,12 +193,19 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Display results as a table
                     st.table(results_data)
                     
-                    # Display improvement tips in expandable sections
-                    with st.expander("Improvement Tips: Proportion & Structure"):
+                    # Display improvement tips without nested expanders
+                    st.markdown("### Improvement Tips")
+                    
+                    # Use columns for the improvement tips
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**Proportion & Structure:**")
                         for tip in ps_data['improvement_tips']:
                             st.markdown(f"- {tip}")
                             
-                    with st.expander("Improvement Tips: Line Quality"):
+                    with col2:
+                        st.markdown("**Line Quality:**")
                         for tip in lq_data['improvement_tips']:
                             st.markdown(f"- {tip}")
                     
@@ -275,12 +282,19 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Display results as a table
                     st.table(results_data)
                     
-                    # Display improvement tips in expandable sections
-                    with st.expander("Improvement Tips: Proportion & Structure"):
+                    # Display improvement tips without nested expanders
+                    st.markdown("### Improvement Tips")
+                    
+                    # Use columns for the improvement tips
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**Proportion & Structure:**")
                         for tip in ps_data['improvement_tips']:
                             st.markdown(f"- {tip}")
                             
-                    with st.expander("Improvement Tips: Line Quality"):
+                    with col2:
+                        st.markdown("**Line Quality:**")
                         for tip in lq_data['improvement_tips']:
                             st.markdown(f"- {tip}")
                 else:
