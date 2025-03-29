@@ -239,7 +239,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     html += "</table>"
                     
                     # Display the HTML table
-                    st.markdown(html, unsafe_allow_html=True)
+                    st.write(html, unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
@@ -375,7 +375,7 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     html += "</table>"
                     
                     # Display the HTML table
-                    st.markdown(html, unsafe_allow_html=True)
+                    st.write(html, unsafe_allow_html=True)
                     
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
