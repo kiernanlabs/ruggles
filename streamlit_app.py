@@ -78,34 +78,40 @@ else:
                         "role": "user",
                         "content": [
                             {
-                                "type": "text",
+                                "type": "input_text",
                                 "text": f"Here's an artwork by {artist_name}. {question}"
                             },
                             {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/{file_extension};base64,{base64_image}"
-                                }
+                                "type": "input_image",
+                                "image_url": f"data:image/{file_extension};base64,{base64_image}"
                             }
                         ]
                     }
                 ]
 
                 # Generate an answer using the OpenAI API
-                stream = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    max_tokens=500,
-                    stream=True,
+                response = client.responses.create(
+                    model="gpt-4o",
+                    input=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "input_text",
+                                    "text": f"Here's an artwork by {artist_name}. {question}"
+                                },
+                                {
+                                    "type": "input_image",
+                                    "image_url": f"data:image/{file_extension};base64,{base64_image}"
+                                }
+                            ]
+                        }
+                    ]
                 )
 
-                # Stream the response
-                response_text = ""
-                response_container = st.empty()
-                for chunk in stream:
-                    if chunk.choices[0].delta.content:
-                        response_text += chunk.choices[0].delta.content
-                        response_container.markdown(response_text)
+                # Display the response
+                response_text = response.output_text
+                st.markdown(response_text)
 
                 # Store the data in the database
                 artwork_data = {
