@@ -1,4 +1,4 @@
 streamlit
 openai
-supabase-py==2.3.1
-cloudinary==1.37.0
+supabase-py
+cloudinary
