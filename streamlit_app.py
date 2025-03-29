@@ -59,21 +59,26 @@ with tab1:
             st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
             
         # Add toggle for sketch type
-        col1, col2, col3 = st.columns([1, 2, 1])
+        col1, col2, col3 = st.columns([2, 2, 2])
         with col1:
             st.write("**Quick Sketch**")
         with col2:
-            sketch_type_value = st.toggle("Evaluation Type", value=True)
-            sketch_type = "full realism" if sketch_type_value else "quick sketch"
+            sketch_type_value = st.toggle("Select Mode", value=True, 
+                                       help="Toggle between Quick Sketch (4 criteria) and Full Realism (8 criteria)")
         with col3:
             st.write("**Full Realism**")
-        
-        # Display selected mode
+
+        sketch_type = "full realism" if sketch_type_value else "quick sketch"
+
+        # Display selected mode with more emphasis
         if sketch_type == "quick sketch":
-            st.info("Quick Sketch Mode: Evaluating only fundamental aspects (Proportion & Structure, Line Quality, Form & Volume, Mood & Expression)")
+            st.info("✏️ **Quick Sketch Mode**: Evaluating only fundamental aspects (Proportion & Structure, Line Quality, Form & Volume, Mood & Expression)")
         else:
-            st.info("Full Realism Mode: Evaluating all criteria")
-            
+            st.info("🖼️ **Full Realism Mode**: Evaluating all 8 criteria including Value & Light, Detail & Texture, Composition & Perspective, and Overall Realism")
+
+        # Show selected mode for confirmation
+        st.caption(f"Selected evaluation type: **{sketch_type}**")
+        
         # Add checkbox for database storage permission
         store_in_db = st.checkbox("Store art and evaluation in the Ruggles database for others to see", value=True)
 
@@ -574,9 +579,14 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                                 "evaluation_data": evaluation_data
                             }
                             
+                            # Debug output to confirm sketch type
+                            st.caption(f"Saving with sketch type: **{sketch_type}**")
+                            
                             result = insert_artwork(artwork_data)
                             if result:
                                 st.success("Analysis saved successfully!")
+                                # Confirm the sketch type was saved
+                                st.info(f"Your {sketch_type} evaluation has been stored in the database.")
                     except json.JSONDecodeError:
                         st.error("Error parsing the evaluation response. Please try again.")
                         st.markdown(response.output_text)

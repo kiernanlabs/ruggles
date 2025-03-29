@@ -59,15 +59,16 @@ def insert_artwork(artwork_data: dict):
     - image_public_id: str
     - artist_name: str
     - created_at: str (ISO format)
+    - sketch_type: str ("quick sketch" or "full realism")
     - evaluation_data: dict containing:
         - proportion_and_structure: dict with score, rationale, improvement_tips
         - line_quality: dict with score, rationale, improvement_tips
-        - value_and_light: dict with score, rationale, improvement_tips
-        - detail_and_texture: dict with score, rationale, improvement_tips
-        - composition_and_perspective: dict with score, rationale, improvement_tips
+        - value_and_light: dict with score, rationale, improvement_tips (only for full realism)
+        - detail_and_texture: dict with score, rationale, improvement_tips (only for full realism)
+        - composition_and_perspective: dict with score, rationale, improvement_tips (only for full realism)
         - form_and_volume: dict with score, rationale, improvement_tips
         - mood_and_expression: dict with score, rationale, improvement_tips
-        - overall_realism: dict with score, rationale, improvement_tips
+        - overall_realism: dict with score, rationale, improvement_tips (only for full realism)
     """
     supabase = init_supabase()
     if supabase:
@@ -78,6 +79,14 @@ def insert_artwork(artwork_data: dict):
             # Save the raw gpt_response before removing it
             gpt_response = artwork_data.get('gpt_response', '')
             
+            # Extract sketch type, ensuring it has a valid value
+            sketch_type = artwork_data.get('sketch_type', 'full realism')
+            # Validate sketch type value
+            if sketch_type not in ['quick sketch', 'full realism']:
+                sketch_type = 'full realism'  # Default if invalid value
+                
+            st.write(f"Debug - Inserting with sketch type: {sketch_type}")
+            
             # Prepare the data for insertion
             data = {
                 "title": artwork_data.get('title', ''),
@@ -87,6 +96,7 @@ def insert_artwork(artwork_data: dict):
                 "artist_name": artwork_data.get('artist_name', ''),
                 "created_at": artwork_data.get('created_at', datetime.now().isoformat()),
                 "artwork_date": artwork_data.get('artwork_date', datetime.now().strftime('%Y-%m-%d')),
+                "sketch_type": sketch_type,  # Use validated sketch type
                 "question": artwork_data.get('question', ''),
                 "gpt_response": gpt_response,
                 
@@ -96,21 +106,32 @@ def insert_artwork(artwork_data: dict):
                 'proportion_tips': evaluation_data.get('proportion_and_structure', {}).get('improvement_tips', []),
                 'line_quality_score': evaluation_data.get('line_quality', {}).get('score', 0),
                 'line_quality_rationale': evaluation_data.get('line_quality', {}).get('rationale', ''),
-                'line_quality_tips': evaluation_data.get('line_quality', {}).get('improvement_tips', []),
-                
-                # New evaluation criteria
-                'value_light_score': evaluation_data.get('value_and_light', {}).get('score', 0),
-                'value_light_rationale': evaluation_data.get('value_and_light', {}).get('rationale', ''),
-                'value_light_tips': evaluation_data.get('value_and_light', {}).get('improvement_tips', []),
-                
-                'detail_texture_score': evaluation_data.get('detail_and_texture', {}).get('score', 0),
-                'detail_texture_rationale': evaluation_data.get('detail_and_texture', {}).get('rationale', ''),
-                'detail_texture_tips': evaluation_data.get('detail_and_texture', {}).get('improvement_tips', []),
-                
-                'composition_perspective_score': evaluation_data.get('composition_and_perspective', {}).get('score', 0),
-                'composition_perspective_rationale': evaluation_data.get('composition_and_perspective', {}).get('rationale', ''),
-                'composition_perspective_tips': evaluation_data.get('composition_and_perspective', {}).get('improvement_tips', []),
-                
+                'line_quality_tips': evaluation_data.get('line_quality', {}).get('improvement_tips', [])
+            }
+            
+            # Only add full realism criteria values if this is a full realism evaluation
+            if sketch_type == 'full realism':
+                data.update({
+                    # New evaluation criteria (only for full realism)
+                    'value_light_score': evaluation_data.get('value_and_light', {}).get('score', 0),
+                    'value_light_rationale': evaluation_data.get('value_and_light', {}).get('rationale', ''),
+                    'value_light_tips': evaluation_data.get('value_and_light', {}).get('improvement_tips', []),
+                    
+                    'detail_texture_score': evaluation_data.get('detail_and_texture', {}).get('score', 0),
+                    'detail_texture_rationale': evaluation_data.get('detail_and_texture', {}).get('rationale', ''),
+                    'detail_texture_tips': evaluation_data.get('detail_and_texture', {}).get('improvement_tips', []),
+                    
+                    'composition_perspective_score': evaluation_data.get('composition_and_perspective', {}).get('score', 0),
+                    'composition_perspective_rationale': evaluation_data.get('composition_and_perspective', {}).get('rationale', ''),
+                    'composition_perspective_tips': evaluation_data.get('composition_and_perspective', {}).get('improvement_tips', []),
+                    
+                    'overall_realism_score': evaluation_data.get('overall_realism', {}).get('score', 0),
+                    'overall_realism_rationale': evaluation_data.get('overall_realism', {}).get('rationale', ''),
+                    'overall_realism_tips': evaluation_data.get('overall_realism', {}).get('improvement_tips', []),
+                })
+            
+            # These common fields are always included for both quick sketch and full realism
+            data.update({
                 'form_volume_score': evaluation_data.get('form_and_volume', {}).get('score', 0),
                 'form_volume_rationale': evaluation_data.get('form_and_volume', {}).get('rationale', ''),
                 'form_volume_tips': evaluation_data.get('form_and_volume', {}).get('improvement_tips', []),
@@ -119,12 +140,8 @@ def insert_artwork(artwork_data: dict):
                 'mood_expression_rationale': evaluation_data.get('mood_and_expression', {}).get('rationale', ''),
                 'mood_expression_tips': evaluation_data.get('mood_and_expression', {}).get('improvement_tips', []),
                 
-                'overall_realism_score': evaluation_data.get('overall_realism', {}).get('score', 0),
-                'overall_realism_rationale': evaluation_data.get('overall_realism', {}).get('rationale', ''),
-                'overall_realism_tips': evaluation_data.get('overall_realism', {}).get('improvement_tips', []),
-                
                 'evaluation_version': 'v1'
-            }
+            })
             
             return supabase.table("artworks").insert(data).execute()
         except Exception as e:
