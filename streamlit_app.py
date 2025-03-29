@@ -38,7 +38,7 @@ else:
 
     # Display the uploaded image if available
     if uploaded_file:
-        st.image(uploaded_file, caption="Uploaded Artwork", height=300)
+        st.image(uploaded_file, caption="Uploaded Artwork", use_column_width=True)
 
     # Get artist name
     if uploaded_file is not None:
@@ -149,6 +149,6 @@ else:
     if artworks and artworks.data:
         for artwork in artworks.data:
             with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
-                st.image(artwork['image_url'], caption=artwork['title'], height=300)
+                st.image(artwork['image_url'], caption=artwork['title'], use_column_width=True)
                 st.write("**Question:**", artwork['question'])
                 st.write("**Analysis:**", artwork['gpt_response'])
