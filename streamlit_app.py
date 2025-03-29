@@ -7,6 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import base64
 from io import BytesIO
+import json
 
 # Load environment variables (for local development)
 load_dotenv()
@@ -83,30 +84,22 @@ else:
                 file_extension = uploaded_file.type.split('/')[-1]
                 
                 # Prepare the prompt for GPT
-                messages = [
-                    {
-                        "role": "system",
-                        "content": "You are an expert art analyst. Analyze the artwork and answer the user's question thoughtfully and professionally."
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "input_text",
-                                "text": f"Here's an artwork by {artist_name}. {question}"
-                            },
-                            {
-                                "type": "input_image",
-                                "image_url": f"data:image/{file_extension};base64,{base64_image}"
-                            }
-                        ]
-                    }
-                ]
+                system_prompt = """You are an expert art critic and instructor. Evaluate the provided sketch using the following criteria, scoring each one on a scale of 1 to 20 (1 = Poor, 20 = Excellent). For each category, include:
+A 1–3 sentence rationale explaining the score.
+A set of 1–3 actionable tips for how the artist could improve in that specific area.
+
+Evaluation Criteria:
+Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
+Line Quality – Are the lines confident, controlled, and varied to define form, contour, or texture effectively?"""
 
                 # Generate an answer using the OpenAI API
                 response = client.responses.create(
                     model="gpt-4o",
                     input=[
+                        {
+                            "role": "system",
+                            "content": system_prompt
+                        },
                         {
                             "role": "user",
                             "content": [
@@ -120,28 +113,109 @@ else:
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    text={
+                        "format": {
+                            "type": "json_schema",
+                            "name": "artwork_evaluation",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "proportion_and_structure": {
+                                        "type": "object",
+                                        "properties": {
+                                            "score": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 20
+                                            },
+                                            "rationale": {
+                                                "type": "string"
+                                            },
+                                            "improvement_tips": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "maxItems": 3
+                                            }
+                                        },
+                                        "required": ["score", "rationale", "improvement_tips"]
+                                    },
+                                    "line_quality": {
+                                        "type": "object",
+                                        "properties": {
+                                            "score": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 20
+                                            },
+                                            "rationale": {
+                                                "type": "string"
+                                            },
+                                            "improvement_tips": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "maxItems": 3
+                                            }
+                                        },
+                                        "required": ["score", "rationale", "improvement_tips"]
+                                    }
+                                },
+                                "required": ["proportion_and_structure", "line_quality"],
+                                "additionalProperties": False
+                            },
+                            "strict": True
+                        }
+                    }
                 )
 
-                # Display the response
-                response_text = response.output_text
-                st.markdown(response_text)
-
-                # Store the data in the database
-                artwork_data = {
-                    "title": uploaded_file.name,
-                    "description": question,
-                    "image_url": image_data["url"],
-                    "image_public_id": image_data["public_id"],
-                    "artist_name": artist_name,
-                    "created_at": datetime.now().isoformat(),
-                    "question": question,
-                    "gpt_response": response_text
-                }
-                
-                result = insert_artwork(artwork_data)
-                if result:
-                    st.success("Analysis saved successfully!")
+                # Parse the response
+                try:
+                    evaluation_data = json.loads(response.output_text)
+                    
+                    # Display the evaluation results
+                    st.subheader("Artwork Evaluation")
+                    
+                    # Display Proportion & Structure
+                    st.markdown("### Proportion & Structure")
+                    st.markdown(f"**Score:** {evaluation_data['proportion_and_structure']['score']}/20")
+                    st.markdown(f"**Rationale:** {evaluation_data['proportion_and_structure']['rationale']}")
+                    st.markdown("**Improvement Tips:**")
+                    for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
+                        st.markdown(f"- {tip}")
+                    
+                    # Display Line Quality
+                    st.markdown("### Line Quality")
+                    st.markdown(f"**Score:** {evaluation_data['line_quality']['score']}/20")
+                    st.markdown(f"**Rationale:** {evaluation_data['line_quality']['rationale']}")
+                    st.markdown("**Improvement Tips:**")
+                    for tip in evaluation_data['line_quality']['improvement_tips']:
+                        st.markdown(f"- {tip}")
+                    
+                    # Store the data in the database
+                    artwork_data = {
+                        "title": uploaded_file.name,
+                        "description": question,
+                        "image_url": image_data["url"],
+                        "image_public_id": image_data["public_id"],
+                        "artist_name": artist_name,
+                        "created_at": datetime.now().isoformat(),
+                        "question": question,
+                        "gpt_response": response.output_text,
+                        "evaluation_data": evaluation_data
+                    }
+                    
+                    result = insert_artwork(artwork_data)
+                    if result:
+                        st.success("Analysis saved successfully!")
+                except json.JSONDecodeError:
+                    st.error("Error parsing the evaluation response. Please try again.")
+                    st.markdown(response.output_text)
 
     # Display previous analyses
     st.subheader("Previous Analyses")
@@ -151,4 +225,23 @@ else:
             with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
                 st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
                 st.write("**Question:**", artwork['question'])
-                st.write("**Analysis:**", artwork['gpt_response'])
+                
+                # Display evaluation data if available
+                if 'evaluation_data' in artwork:
+                    evaluation_data = artwork['evaluation_data']
+                    
+                    st.markdown("### Proportion & Structure")
+                    st.markdown(f"**Score:** {evaluation_data['proportion_and_structure']['score']}/20")
+                    st.markdown(f"**Rationale:** {evaluation_data['proportion_and_structure']['rationale']}")
+                    st.markdown("**Improvement Tips:**")
+                    for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
+                        st.markdown(f"- {tip}")
+                    
+                    st.markdown("### Line Quality")
+                    st.markdown(f"**Score:** {evaluation_data['line_quality']['score']}/20")
+                    st.markdown(f"**Rationale:** {evaluation_data['line_quality']['rationale']}")
+                    st.markdown("**Improvement Tips:**")
+                    for tip in evaluation_data['line_quality']['improvement_tips']:
+                        st.markdown(f"- {tip}")
+                else:
+                    st.write("**Analysis:**", artwork['gpt_response'])
