@@ -41,18 +41,30 @@ else:
         st.image(uploaded_file, caption="Uploaded Artwork", height=300)
 
     # Get artist name
-    artist_name = st.text_input(
-        "Artist Name",
-        placeholder="Enter the artist's name",
-        disabled=not uploaded_file
-    )
+    if uploaded_file is not None:
+        artist_name = st.text_input(
+            "Artist Name",
+            placeholder="Enter the artist's name"
+        )
+    else:
+        artist_name = st.text_input(
+            "Artist Name",
+            placeholder="Upload an image first",
+            disabled=True
+        )
 
     # Ask the user for a question about the image
-    question = st.text_area(
-        "Ask a question about the artwork!",
-        placeholder="What style is this artwork in? What emotions does it convey?",
-        disabled=not uploaded_file,
-    )
+    if uploaded_file is not None:
+        question = st.text_area(
+            "Ask a question about the artwork!",
+            placeholder="What style is this artwork in? What emotions does it convey?"
+        )
+    else:
+        question = st.text_area(
+            "Ask a question about the artwork!",
+            placeholder="Upload an image first",
+            disabled=True
+        )
 
     # Analyze Artwork button (disabled until all fields are filled)
     if st.button("Analyze Artwork", disabled=not (uploaded_file and question and artist_name)):
