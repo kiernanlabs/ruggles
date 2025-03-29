@@ -58,6 +58,23 @@ with tab1:
         if uploaded_file:
             st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
             
+        # Add slider for sketch type
+        sketch_type_value = st.slider(
+            "Evaluation Type",
+            min_value=0, 
+            max_value=1, 
+            value=1,
+            format=None,
+            help="Quick sketch focuses on fundamental aspects, while Full Realism evaluates all criteria"
+        )
+        sketch_type = "quick sketch" if sketch_type_value == 0 else "full realism"
+        
+        # Display selected mode
+        if sketch_type == "quick sketch":
+            st.info("Quick Sketch Mode: Evaluating only fundamental aspects (Proportion & Structure, Line Quality, Form & Volume, Mood & Expression)")
+        else:
+            st.info("Full Realism Mode: Evaluating all criteria")
+            
         # Add checkbox for database storage permission
         store_in_db = st.checkbox("Store art and evaluation in the Ruggles database for others to see", value=True)
 
@@ -77,20 +94,227 @@ with tab1:
                     # Get the file extension
                     file_extension = uploaded_file.type.split('/')[-1]
                     
-                    # Prepare the prompt for GPT
+                    # Prepare the prompt for GPT - adjusting based on sketch type
                     system_prompt = """You are an expert art critic and instructor. Evaluate the provided sketch using the following criteria, scoring each one on a scale of 1 to 20 (1 = Poor, 20 = Excellent). For each category, include:
 A 1–3 sentence rationale explaining the score.
 A set of 1–3 actionable tips for how the artist could improve in that specific area.
 
 Evaluation Criteria:
 Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
-Line Quality – Are the lines confident, controlled, and varied to define form, contour, or texture effectively?
+Line Quality – Are the lines confident, controlled, and varied to define form, contour, or texture effectively?"""
+
+                    # Add additional criteria for full realism mode
+                    if sketch_type == "full realism":
+                        system_prompt += """
 Value & Light – Is there effective use of shading and light to create realistic depth, contrast, and form?
 Detail & Texture – Are the textures believable and appropriate for the subject? Is the level of detail well-judged?
-Composition & Perspective – Is the placement of elements balanced? Is perspective applied accurately?
+Composition & Perspective – Is the placement of elements balanced? Is perspective applied accurately?"""
+                    
+                    # Add form and volume, mood and expression for both modes
+                    system_prompt += """
 Form & Volume – Does the drawing feel three-dimensional? Are forms convincingly modeled through shading or structure?
-Mood & Expression – Does the image evoke a mood, emotion, or atmosphere, even subtly?
+Mood & Expression – Does the image evoke a mood, emotion, or atmosphere, even subtly?"""
+                    
+                    # Add overall realism for full realism mode only
+                    if sketch_type == "full realism":
+                        system_prompt += """
 Overall Realism – How realistic is the overall sketch in terms of visual believability and execution?"""
+
+                    # Setup the JSON schema based on sketch type
+                    schema = {
+                        "type": "object",
+                        "properties": {
+                            "proportion_and_structure": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                    },
+                                    "rationale": {
+                                        "type": "string",
+                                        "description": "1-3 sentence explanation for the score"
+                                    },
+                                    "improvement_tips": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "1-3 actionable tips for improvement"
+                                    }
+                                },
+                                "required": ["score", "rationale", "improvement_tips"],
+                                "additionalProperties": False
+                            },
+                            "line_quality": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                    },
+                                    "rationale": {
+                                        "type": "string",
+                                        "description": "1-3 sentence explanation for the score"
+                                    },
+                                    "improvement_tips": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "1-3 actionable tips for improvement"
+                                    }
+                                },
+                                "required": ["score", "rationale", "improvement_tips"],
+                                "additionalProperties": False
+                            },
+                            "form_and_volume": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                    },
+                                    "rationale": {
+                                        "type": "string",
+                                        "description": "1-3 sentence explanation for the score"
+                                    },
+                                    "improvement_tips": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "1-3 actionable tips for improvement"
+                                    }
+                                },
+                                "required": ["score", "rationale", "improvement_tips"],
+                                "additionalProperties": False
+                            },
+                            "mood_and_expression": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                    },
+                                    "rationale": {
+                                        "type": "string",
+                                        "description": "1-3 sentence explanation for the score"
+                                    },
+                                    "improvement_tips": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "1-3 actionable tips for improvement"
+                                    }
+                                },
+                                "required": ["score", "rationale", "improvement_tips"],
+                                "additionalProperties": False
+                            }
+                        },
+                        "required": ["proportion_and_structure", "line_quality", "form_and_volume", "mood_and_expression"],
+                        "additionalProperties": False
+                    }
+                    
+                    # Add additional schema properties for full realism mode
+                    if sketch_type == "full realism":
+                        schema["properties"]["value_and_light"] = {
+                            "type": "object",
+                            "properties": {
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                },
+                                "rationale": {
+                                    "type": "string",
+                                    "description": "1-3 sentence explanation for the score"
+                                },
+                                "improvement_tips": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "1-3 actionable tips for improvement"
+                                }
+                            },
+                            "required": ["score", "rationale", "improvement_tips"],
+                            "additionalProperties": False
+                        }
+                        
+                        schema["properties"]["detail_and_texture"] = {
+                            "type": "object",
+                            "properties": {
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                },
+                                "rationale": {
+                                    "type": "string",
+                                    "description": "1-3 sentence explanation for the score"
+                                },
+                                "improvement_tips": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "1-3 actionable tips for improvement"
+                                }
+                            },
+                            "required": ["score", "rationale", "improvement_tips"],
+                            "additionalProperties": False
+                        }
+                        
+                        schema["properties"]["composition_and_perspective"] = {
+                            "type": "object",
+                            "properties": {
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                },
+                                "rationale": {
+                                    "type": "string",
+                                    "description": "1-3 sentence explanation for the score"
+                                },
+                                "improvement_tips": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "1-3 actionable tips for improvement"
+                                }
+                            },
+                            "required": ["score", "rationale", "improvement_tips"],
+                            "additionalProperties": False
+                        }
+                        
+                        schema["properties"]["overall_realism"] = {
+                            "type": "object",
+                            "properties": {
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
+                                },
+                                "rationale": {
+                                    "type": "string",
+                                    "description": "1-3 sentence explanation for the score"
+                                },
+                                "improvement_tips": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "1-3 actionable tips for improvement"
+                                }
+                            },
+                            "required": ["score", "rationale", "improvement_tips"],
+                            "additionalProperties": False
+                        }
+                        
+                        # Update required properties for full realism
+                        schema["required"] = ["proportion_and_structure", "line_quality", "value_and_light", 
+                                              "detail_and_texture", "composition_and_perspective", 
+                                              "form_and_volume", "mood_and_expression", "overall_realism"]
 
                     # Generate an answer using the OpenAI API
                     response = client.responses.create(
@@ -118,189 +342,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             "format": {
                                 "type": "json_schema",
                                 "name": "artwork_evaluation",
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "proportion_and_structure": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "line_quality": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "value_and_light": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "detail_and_texture": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "composition_and_perspective": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "form_and_volume": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "mood_and_expression": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        },
-                                        "overall_realism": {
-                                            "type": "object",
-                                            "properties": {
-                                                "score": {
-                                                    "type": "integer",
-                                                    "description": "Score between 1 and 20, where 1 is poor and 20 is excellent"
-                                                },
-                                                "rationale": {
-                                                    "type": "string",
-                                                    "description": "1-3 sentence explanation for the score"
-                                                },
-                                                "improvement_tips": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": "1-3 actionable tips for improvement"
-                                                }
-                                            },
-                                            "required": ["score", "rationale", "improvement_tips"],
-                                            "additionalProperties": False
-                                        }
-                                    },
-                                    "required": ["proportion_and_structure", "line_quality", "value_and_light", "detail_and_texture", "composition_and_perspective", "form_and_volume", "mood_and_expression", "overall_realism"],
-                                    "additionalProperties": False
-                                },
+                                "schema": schema,
                                 "strict": True
                             }
                         }
@@ -332,29 +374,31 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             "Rationale": lq_data['rationale']
                         })
                         
-                        # Add value and light data
-                        vl_data = evaluation_data['value_and_light']
-                        results_data.append({
-                            "Criteria": "Value & Light",
-                            "Score": f"{vl_data['score']}/20",
-                            "Rationale": vl_data['rationale']
-                        })
-                        
-                        # Add detail and texture data
-                        dt_data = evaluation_data['detail_and_texture']
-                        results_data.append({
-                            "Criteria": "Detail & Texture",
-                            "Score": f"{dt_data['score']}/20",
-                            "Rationale": dt_data['rationale']
-                        })
-                        
-                        # Add composition and perspective data
-                        cp_data = evaluation_data['composition_and_perspective']
-                        results_data.append({
-                            "Criteria": "Composition & Perspective",
-                            "Score": f"{cp_data['score']}/20",
-                            "Rationale": cp_data['rationale']
-                        })
+                        # For full realism mode, add other criteria
+                        if sketch_type == "full realism":
+                            # Add value and light data
+                            vl_data = evaluation_data['value_and_light']
+                            results_data.append({
+                                "Criteria": "Value & Light",
+                                "Score": f"{vl_data['score']}/20",
+                                "Rationale": vl_data['rationale']
+                            })
+                            
+                            # Add detail and texture data
+                            dt_data = evaluation_data['detail_and_texture']
+                            results_data.append({
+                                "Criteria": "Detail & Texture",
+                                "Score": f"{dt_data['score']}/20",
+                                "Rationale": dt_data['rationale']
+                            })
+                            
+                            # Add composition and perspective data
+                            cp_data = evaluation_data['composition_and_perspective']
+                            results_data.append({
+                                "Criteria": "Composition & Perspective",
+                                "Score": f"{cp_data['score']}/20",
+                                "Rationale": cp_data['rationale']
+                            })
                         
                         # Add form and volume data
                         fv_data = evaluation_data['form_and_volume']
@@ -372,18 +416,32 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             "Rationale": me_data['rationale']
                         })
                         
-                        # Add overall realism data
-                        or_data = evaluation_data['overall_realism']
-                        results_data.append({
-                            "Criteria": "Overall Realism",
-                            "Score": f"{or_data['score']}/20",
-                            "Rationale": or_data['rationale']
-                        })
+                        # Add overall realism data for full realism mode
+                        if sketch_type == "full realism":
+                            or_data = evaluation_data['overall_realism']
+                            results_data.append({
+                                "Criteria": "Overall Realism",
+                                "Score": f"{or_data['score']}/20",
+                                "Rationale": or_data['rationale']
+                            })
                         
-                        # Calculate average score
-                        total_score = (ps_data['score'] + lq_data['score'] + vl_data['score'] + dt_data['score'] + 
-                                    cp_data['score'] + fv_data['score'] + me_data['score'] + or_data['score'])
-                        avg_score = total_score / 8
+                        # Calculate average score based on available criteria
+                        scores = []
+                        scores.append(ps_data['score'])
+                        scores.append(lq_data['score'])
+                        
+                        if sketch_type == "full realism":
+                            scores.append(vl_data['score'])
+                            scores.append(dt_data['score'])
+                            scores.append(cp_data['score'])
+                            
+                        scores.append(fv_data['score'])
+                        scores.append(me_data['score'])
+                        
+                        if sketch_type == "full realism":
+                            scores.append(or_data['score'])
+                        
+                        avg_score = sum(scores) / len(scores)
                         
                         # Add average score row
                         results_data.append({
@@ -446,41 +504,59 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         # Display improvement tips without nested expanders
                         st.markdown("### Improvement Tips")
                         
-                        # Use columns for the improvement tips
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
+                        # Use columns for the improvement tips - adjust based on sketch type
+                        if sketch_type == "full realism":
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown("**Proportion & Structure:**")
+                                for tip in ps_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Value & Light:**")
+                                for tip in vl_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Composition & Perspective:**")
+                                for tip in cp_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Mood & Expression:**")
+                                for tip in me_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                            
+                            with col2:
+                                st.markdown("**Line Quality:**")
+                                for tip in lq_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Detail & Texture:**")
+                                for tip in dt_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Form & Volume:**")
+                                for tip in fv_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                                st.markdown("**Overall Realism:**")
+                                for tip in or_data['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                        else:
+                            # For quick sketch mode, use single column layout
                             st.markdown("**Proportion & Structure:**")
                             for tip in ps_data['improvement_tips']:
                                 st.markdown(f"- {tip}")
                                 
-                            st.markdown("**Value & Light:**")
-                            for tip in vl_data['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                                
-                            st.markdown("**Composition & Perspective:**")
-                            for tip in cp_data['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                                
-                            st.markdown("**Mood & Expression:**")
-                            for tip in me_data['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                        
-                        with col2:
                             st.markdown("**Line Quality:**")
                             for tip in lq_data['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                                
-                            st.markdown("**Detail & Texture:**")
-                            for tip in dt_data['improvement_tips']:
                                 st.markdown(f"- {tip}")
                                 
                             st.markdown("**Form & Volume:**")
                             for tip in fv_data['improvement_tips']:
                                 st.markdown(f"- {tip}")
                                 
-                            st.markdown("**Overall Realism:**")
-                            for tip in or_data['improvement_tips']:
+                            st.markdown("**Mood & Expression:**")
+                            for tip in me_data['improvement_tips']:
                                 st.markdown(f"- {tip}")
                         
                         # Store the data in the database if checkbox is checked
@@ -493,6 +569,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                                 "artist_name": artist_name,
                                 "created_at": datetime.now().isoformat(),
                                 "artwork_date": artwork_date.strftime('%Y-%m-%d'),
+                                "sketch_type": sketch_type,
                                 "question": "Standard evaluation v0",
                                 "gpt_response": response.output_text,
                                 "evaluation_data": evaluation_data
@@ -515,22 +592,26 @@ with tab2:
             if 'evaluation_data' in artwork:
                 evaluation_data = artwork['evaluation_data']
                 
-                # Calculate average score (handling both old and new format)
+                # Calculate average score (handling both old and new format and sketch type)
                 scores = []
                 if 'proportion_and_structure' in evaluation_data:
                     scores.append(evaluation_data['proportion_and_structure']['score'])
                 if 'line_quality' in evaluation_data:
                     scores.append(evaluation_data['line_quality']['score'])
+                
+                # Only include these criteria if they exist
                 if 'value_and_light' in evaluation_data:
                     scores.append(evaluation_data['value_and_light']['score'])
                 if 'detail_and_texture' in evaluation_data:
                     scores.append(evaluation_data['detail_and_texture']['score'])
                 if 'composition_and_perspective' in evaluation_data:
                     scores.append(evaluation_data['composition_and_perspective']['score'])
+                
                 if 'form_and_volume' in evaluation_data:
                     scores.append(evaluation_data['form_and_volume']['score'])
                 if 'mood_and_expression' in evaluation_data:
                     scores.append(evaluation_data['mood_and_expression']['score'])
+                
                 if 'overall_realism' in evaluation_data:
                     scores.append(evaluation_data['overall_realism']['score'])
                 
@@ -546,7 +627,12 @@ with tab2:
             if 'artwork_date' in artwork:
                 artwork_date_display = f" - Created on: {artwork['artwork_date']}"
                 
-            with st.expander(f"Artwork by {artwork['artist_name']} - {created_date}{artwork_date_display}{avg_score_text}"):
+            # Get sketch type if available
+            sketch_type_display = ""
+            if 'sketch_type' in artwork:
+                sketch_type_display = f" - Type: {artwork['sketch_type'].title()}"
+                
+            with st.expander(f"Artwork by {artwork['artist_name']} - {created_date}{artwork_date_display}{sketch_type_display}{avg_score_text}"):
                 st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
                 
                 # Display evaluation data if available
@@ -557,20 +643,22 @@ with tab2:
                     results_data = []
                     
                     # Add proportion and structure data
-                    ps_data = evaluation_data['proportion_and_structure']
-                    results_data.append({
-                        "Criteria": "Proportion & Structure",
-                        "Score": f"{ps_data['score']}/20",
-                        "Rationale": ps_data['rationale']
-                    })
+                    if 'proportion_and_structure' in evaluation_data:
+                        ps_data = evaluation_data['proportion_and_structure']
+                        results_data.append({
+                            "Criteria": "Proportion & Structure",
+                            "Score": f"{ps_data['score']}/20",
+                            "Rationale": ps_data['rationale']
+                        })
                     
                     # Add line quality data
-                    lq_data = evaluation_data['line_quality']
-                    results_data.append({
-                        "Criteria": "Line Quality",
-                        "Score": f"{lq_data['score']}/20",
-                        "Rationale": lq_data['rationale']
-                    })
+                    if 'line_quality' in evaluation_data:
+                        lq_data = evaluation_data['line_quality']
+                        results_data.append({
+                            "Criteria": "Line Quality",
+                            "Score": f"{lq_data['score']}/20",
+                            "Rationale": lq_data['rationale']
+                        })
                     
                     # Add additional criteria if they exist in the evaluation data
                     if 'value_and_light' in evaluation_data:
@@ -621,12 +709,15 @@ with tab2:
                             "Rationale": or_data['rationale']
                         })
                     
-                    # Add average score row
-                    results_data.append({
-                        "Criteria": "Average Score",
-                        "Score": f"{avg_score:.1f}/20",
-                        "Rationale": "Average of all criteria scores"
-                    })
+                    # Calculate average score based on available criteria
+                    if scores:
+                        avg_score = sum(scores) / len(scores)
+                        # Add average score row
+                        results_data.append({
+                            "Criteria": "Average Score",
+                            "Score": f"{avg_score:.1f}/20",
+                            "Rationale": "Average of all criteria scores"
+                        })
                     
                     # Convert to DataFrame
                     df = pd.DataFrame(results_data)
@@ -682,49 +773,74 @@ with tab2:
                     # Display improvement tips without nested expanders
                     st.markdown("### Improvement Tips")
                     
-                    # Use columns for the improvement tips
-                    col1, col2 = st.columns(2)
-                    
-                    # Left column
-                    with col1:
-                        st.markdown("**Proportion & Structure:**")
-                        for tip in ps_data['improvement_tips']:
-                            st.markdown(f"- {tip}")
+                    # Use columns for the improvement tips if in Full Realism mode
+                    if ('sketch_type' in artwork and artwork['sketch_type'] == 'full realism') or \
+                       ('value_and_light' in evaluation_data and 'detail_and_texture' in evaluation_data):
+                        col1, col2 = st.columns(2)
+                        
+                        # Left column
+                        with col1:
+                            if 'proportion_and_structure' in evaluation_data:
+                                st.markdown("**Proportion & Structure:**")
+                                for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                
+                            if 'value_and_light' in evaluation_data:
+                                st.markdown("**Value & Light:**")
+                                for tip in evaluation_data['value_and_light']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                            if 'composition_and_perspective' in evaluation_data:
+                                st.markdown("**Composition & Perspective:**")
+                                for tip in evaluation_data['composition_and_perspective']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                            if 'mood_and_expression' in evaluation_data:
+                                st.markdown("**Mood & Expression:**")
+                                for tip in evaluation_data['mood_and_expression']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                        
+                        # Right column            
+                        with col2:
+                            if 'line_quality' in evaluation_data:
+                                st.markdown("**Line Quality:**")
+                                for tip in evaluation_data['line_quality']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                
+                            if 'detail_and_texture' in evaluation_data:
+                                st.markdown("**Detail & Texture:**")
+                                for tip in evaluation_data['detail_and_texture']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                            if 'form_and_volume' in evaluation_data:
+                                st.markdown("**Form & Volume:**")
+                                for tip in evaluation_data['form_and_volume']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                                    
+                            if 'overall_realism' in evaluation_data:
+                                st.markdown("**Overall Realism:**")
+                                for tip in evaluation_data['overall_realism']['improvement_tips']:
+                                    st.markdown(f"- {tip}")
+                    else:
+                        # For quick sketch mode, use single column layout
+                        if 'proportion_and_structure' in evaluation_data:
+                            st.markdown("**Proportion & Structure:**")
+                            for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
+                                st.markdown(f"- {tip}")
                             
-                        if 'value_and_light' in evaluation_data:
-                            st.markdown("**Value & Light:**")
-                            for tip in evaluation_data['value_and_light']['improvement_tips']:
+                        if 'line_quality' in evaluation_data:
+                            st.markdown("**Line Quality:**")
+                            for tip in evaluation_data['line_quality']['improvement_tips']:
                                 st.markdown(f"- {tip}")
-                                
-                        if 'composition_and_perspective' in evaluation_data:
-                            st.markdown("**Composition & Perspective:**")
-                            for tip in evaluation_data['composition_and_perspective']['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                                
-                        if 'mood_and_expression' in evaluation_data:
-                            st.markdown("**Mood & Expression:**")
-                            for tip in evaluation_data['mood_and_expression']['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                    
-                    # Right column            
-                    with col2:
-                        st.markdown("**Line Quality:**")
-                        for tip in lq_data['improvement_tips']:
-                            st.markdown(f"- {tip}")
                             
-                        if 'detail_and_texture' in evaluation_data:
-                            st.markdown("**Detail & Texture:**")
-                            for tip in evaluation_data['detail_and_texture']['improvement_tips']:
-                                st.markdown(f"- {tip}")
-                                
                         if 'form_and_volume' in evaluation_data:
                             st.markdown("**Form & Volume:**")
                             for tip in evaluation_data['form_and_volume']['improvement_tips']:
                                 st.markdown(f"- {tip}")
-                                
-                        if 'overall_realism' in evaluation_data:
-                            st.markdown("**Overall Realism:**")
-                            for tip in evaluation_data['overall_realism']['improvement_tips']:
+                            
+                        if 'mood_and_expression' in evaluation_data:
+                            st.markdown("**Mood & Expression:**")
+                            for tip in evaluation_data['mood_and_expression']['improvement_tips']:
                                 st.markdown(f"- {tip}")
                 else:
                     st.write("**Analysis:**", artwork['gpt_response'])
@@ -734,8 +850,17 @@ with tab3:
     
     st.markdown("""
     ### How It Works
-    Ruggles uses GPT-4o-mini to analyze and provide constructive feedback on artwork. The AI evaluates eight key aspects of your sketch:
+    Ruggles uses GPT-4o-mini to analyze and provide constructive feedback on artwork. The AI evaluates key aspects of your sketch based on the evaluation type you select.
     
+    #### Quick Sketch Mode
+    Focuses on four fundamental aspects:
+    1. **Proportion & Structure** – Accuracy of relative sizes and shapes of elements
+    2. **Line Quality** – Confidence, control, and variation in line work 
+    3. **Form & Volume** – Three-dimensionality and modeling of forms
+    4. **Mood & Expression** – Evocation of emotion, mood, or atmosphere
+    
+    #### Full Realism Mode
+    Evaluates all eight aspects of artwork:
     1. **Proportion & Structure** – Accuracy of relative sizes and shapes of elements
     2. **Line Quality** – Confidence, control, and variation in line work
     3. **Value & Light** – Effective use of shading and light for depth and form
@@ -750,25 +875,6 @@ with tab3:
     - A score on a scale of 1-20 (where 1 is poor and 20 is excellent)
     - A 1-3 sentence rationale explaining the score
     - 1-3 actionable tips for improvement in that specific area
-    
-    ### System Prompt
-    The system uses the following prompt to evaluate artwork:
-    
-    ```
-    You are an expert art critic and instructor. Evaluate the provided sketch using the following criteria, scoring each one on a scale of 1 to 20 (1 = Poor, 20 = Excellent). For each category, include:
-    A 1–3 sentence rationale explaining the score.
-    A set of 1–3 actionable tips for how the artist could improve in that specific area.
-    
-    Evaluation Criteria:
-    Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
-    Line Quality – Are the lines confident, controlled, and varied to define form, contour, or texture effectively?
-    Value & Light – Is there effective use of shading and light to create realistic depth, contrast, and form?
-    Detail & Texture – Are the textures believable and appropriate for the subject? Is the level of detail well-judged?
-    Composition & Perspective – Is the placement of elements balanced? Is perspective applied accurately?
-    Form & Volume – Does the drawing feel three-dimensional? Are forms convincingly modeled through shading or structure?
-    Mood & Expression – Does the image evoke a mood, emotion, or atmosphere, even subtly?
-    Overall Realism – How realistic is the overall sketch in terms of visual believability and execution?
-    ```
     
     ### Privacy Notice
     - Your artwork will be uploaded to our secure servers for analysis
