@@ -161,21 +161,46 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
                     # Display the evaluation results
                     st.subheader("Artwork Evaluation")
                     
-                    # Display Proportion & Structure
-                    st.markdown("### Proportion & Structure")
-                    st.markdown(f"**Score:** {evaluation_data['proportion_and_structure']['score']}/20")
-                    st.markdown(f"**Rationale:** {evaluation_data['proportion_and_structure']['rationale']}")
-                    st.markdown("**Improvement Tips:**")
-                    for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
-                        st.markdown(f"- {tip}")
+                    # Create a table for evaluation results
+                    results_data = []
                     
-                    # Display Line Quality
-                    st.markdown("### Line Quality")
-                    st.markdown(f"**Score:** {evaluation_data['line_quality']['score']}/20")
-                    st.markdown(f"**Rationale:** {evaluation_data['line_quality']['rationale']}")
-                    st.markdown("**Improvement Tips:**")
-                    for tip in evaluation_data['line_quality']['improvement_tips']:
-                        st.markdown(f"- {tip}")
+                    # Add proportion and structure data
+                    ps_data = evaluation_data['proportion_and_structure']
+                    results_data.append({
+                        "Criteria": "Proportion & Structure",
+                        "Score": f"{ps_data['score']}/20",
+                        "Rationale": ps_data['rationale']
+                    })
+                    
+                    # Add line quality data
+                    lq_data = evaluation_data['line_quality']
+                    results_data.append({
+                        "Criteria": "Line Quality",
+                        "Score": f"{lq_data['score']}/20",
+                        "Rationale": lq_data['rationale']
+                    })
+                    
+                    # Calculate average score
+                    avg_score = (ps_data['score'] + lq_data['score']) / 2
+                    
+                    # Add average score row
+                    results_data.append({
+                        "Criteria": "Average Score",
+                        "Score": f"{avg_score:.1f}/20",
+                        "Rationale": "Average of all criteria scores"
+                    })
+                    
+                    # Display results as a table
+                    st.table(results_data)
+                    
+                    # Display improvement tips in expandable sections
+                    with st.expander("Improvement Tips: Proportion & Structure"):
+                        for tip in ps_data['improvement_tips']:
+                            st.markdown(f"- {tip}")
+                            
+                    with st.expander("Improvement Tips: Line Quality"):
+                        for tip in lq_data['improvement_tips']:
+                            st.markdown(f"- {tip}")
                     
                     # Store the data in the database
                     artwork_data = {
@@ -202,25 +227,61 @@ Line Quality – Are the lines confident, controlled, and varied to define form,
     artworks = get_all_artworks()
     if artworks and artworks.data:
         for artwork in artworks.data:
-            with st.expander(f"Artwork by {artwork['artist_name']} - {artwork['created_at']}"):
+            # Calculate average score for expander header if evaluation data exists
+            avg_score_text = ""
+            if 'evaluation_data' in artwork:
+                evaluation_data = artwork['evaluation_data']
+                ps_score = evaluation_data['proportion_and_structure']['score']
+                lq_score = evaluation_data['line_quality']['score']
+                avg_score = (ps_score + lq_score) / 2
+                avg_score_text = f" - Avg Score: {avg_score:.1f}/20"
+                
+            # Format the date to show only YYYY-MM-DD
+            created_date = artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at']
+                
+            with st.expander(f"Artwork by {artwork['artist_name']} - {created_date}{avg_score_text}"):
                 st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
                 
                 # Display evaluation data if available
                 if 'evaluation_data' in artwork:
                     evaluation_data = artwork['evaluation_data']
                     
-                    st.markdown("### Proportion & Structure")
-                    st.markdown(f"**Score:** {evaluation_data['proportion_and_structure']['score']}/20")
-                    st.markdown(f"**Rationale:** {evaluation_data['proportion_and_structure']['rationale']}")
-                    st.markdown("**Improvement Tips:**")
-                    for tip in evaluation_data['proportion_and_structure']['improvement_tips']:
-                        st.markdown(f"- {tip}")
+                    # Create a table for evaluation results
+                    results_data = []
                     
-                    st.markdown("### Line Quality")
-                    st.markdown(f"**Score:** {evaluation_data['line_quality']['score']}/20")
-                    st.markdown(f"**Rationale:** {evaluation_data['line_quality']['rationale']}")
-                    st.markdown("**Improvement Tips:**")
-                    for tip in evaluation_data['line_quality']['improvement_tips']:
-                        st.markdown(f"- {tip}")
+                    # Add proportion and structure data
+                    ps_data = evaluation_data['proportion_and_structure']
+                    results_data.append({
+                        "Criteria": "Proportion & Structure",
+                        "Score": f"{ps_data['score']}/20",
+                        "Rationale": ps_data['rationale']
+                    })
+                    
+                    # Add line quality data
+                    lq_data = evaluation_data['line_quality']
+                    results_data.append({
+                        "Criteria": "Line Quality",
+                        "Score": f"{lq_data['score']}/20",
+                        "Rationale": lq_data['rationale']
+                    })
+                    
+                    # Add average score row
+                    results_data.append({
+                        "Criteria": "Average Score",
+                        "Score": f"{avg_score:.1f}/20",
+                        "Rationale": "Average of all criteria scores"
+                    })
+                    
+                    # Display results as a table
+                    st.table(results_data)
+                    
+                    # Display improvement tips in expandable sections
+                    with st.expander("Improvement Tips: Proportion & Structure"):
+                        for tip in ps_data['improvement_tips']:
+                            st.markdown(f"- {tip}")
+                            
+                    with st.expander("Improvement Tips: Line Quality"):
+                        for tip in lq_data['improvement_tips']:
+                            st.markdown(f"- {tip}")
                 else:
                     st.write("**Analysis:**", artwork['gpt_response'])
