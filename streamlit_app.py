@@ -9,6 +9,7 @@ import base64
 from io import BytesIO
 import json
 import pandas as pd
+import altair as alt
 
 # Set page config (must be the first Streamlit command)
 st.set_page_config(
@@ -604,9 +605,113 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
 
 with tab2:
     st.header("Previous Analyses")
+    
+    # Get all artworks first
     artworks = get_all_artworks()
+    
     if artworks and artworks.data:
-        for artwork in artworks.data:
+        # Extract list of unique artists for filter
+        all_artists = sorted(list(set([artwork.get('artist_name', '') for artwork in artworks.data if artwork.get('artist_name', '')])))
+        
+        # Add filter for artist name
+        selected_artist = st.selectbox(
+            "Filter by Artist",
+            options=["All Artists"] + all_artists,
+            index=0
+        )
+        
+        # Filter artworks by selected artist
+        filtered_artworks = artworks.data
+        if selected_artist != "All Artists":
+            filtered_artworks = [a for a in artworks.data if a.get('artist_name', '') == selected_artist]
+        
+        # Prepare data for scatter plot if we have filtered results
+        if filtered_artworks:
+            plot_data = []
+            for artwork in filtered_artworks:
+                if 'evaluation_data' in artwork and 'created_at' in artwork:
+                    # Calculate average score based on sketch type
+                    scores = []
+                    evaluation_data = artwork['evaluation_data']
+                    
+                    # Core criteria (quick sketch)
+                    if 'proportion_and_structure' in evaluation_data:
+                        scores.append(evaluation_data['proportion_and_structure']['score'])
+                    if 'line_quality' in evaluation_data:
+                        scores.append(evaluation_data['line_quality']['score'])
+                    if 'form_and_volume' in evaluation_data:
+                        scores.append(evaluation_data['form_and_volume']['score'])
+                    if 'mood_and_expression' in evaluation_data:
+                        scores.append(evaluation_data['mood_and_expression']['score'])
+                    
+                    # Additional criteria (full realism)
+                    sketch_type = artwork.get('sketch_type', 'full realism')
+                    if sketch_type == 'full realism':
+                        if 'value_and_light' in evaluation_data:
+                            scores.append(evaluation_data['value_and_light']['score'])
+                        if 'detail_and_texture' in evaluation_data:
+                            scores.append(evaluation_data['detail_and_texture']['score'])
+                        if 'composition_and_perspective' in evaluation_data:
+                            scores.append(evaluation_data['composition_and_perspective']['score'])
+                        if 'overall_realism' in evaluation_data:
+                            scores.append(evaluation_data['overall_realism']['score'])
+                    
+                    if scores:
+                        avg_score = sum(scores) / len(scores)
+                        
+                        # Extract date from created_at
+                        created_date = artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at']
+                        
+                        plot_data.append({
+                            'date': created_date,
+                            'score': avg_score,
+                            'artist': artwork.get('artist_name', 'Unknown'),
+                            'title': artwork.get('title', 'Untitled'),
+                            'sketch_type': sketch_type
+                        })
+            
+            # Create scatter plot if we have data
+            if plot_data:
+                st.subheader("Score Progression Over Time")
+                
+                # Convert to DataFrame for plotting
+                df_plot = pd.DataFrame(plot_data)
+                df_plot['date'] = pd.to_datetime(df_plot['date'])
+                
+                # Create scatter plot with Altair
+                scatter = alt.Chart(df_plot).mark_circle(size=100).encode(
+                    x=alt.X('date:T', title='Date Created'),
+                    y=alt.Y('score:Q', title='Average Score', scale=alt.Scale(domain=[0, 20])),
+                    color=alt.Color('sketch_type:N', title='Evaluation Type'),
+                    tooltip=['date', 'score', 'artist', 'title', 'sketch_type']
+                ).properties(
+                    width=700,
+                    height=300
+                ).interactive()
+                
+                # Add trendline if we have more than 2 data points
+                if len(df_plot) > 2:
+                    line = alt.Chart(df_plot).mark_line(color='red', strokeDash=[5, 5]).encode(
+                        x='date:T',
+                        y='mean(score):Q'
+                    )
+                    chart = scatter + line
+                else:
+                    chart = scatter
+                
+                st.altair_chart(chart, use_container_width=True)
+                
+                # Add some insights if possible
+                if len(df_plot) > 1:
+                    recent_avg = df_plot.sort_values('date', ascending=False).head(3)['score'].mean()
+                    if selected_artist != "All Artists":
+                        st.caption(f"Recent average score for {selected_artist}: {recent_avg:.1f}/20")
+                    else:
+                        st.caption(f"Recent average score across artists: {recent_avg:.1f}/20")
+        
+        # Display the filtered artworks
+        st.subheader(f"{'All' if selected_artist == 'All Artists' else selected_artist}'s Artwork Evaluations")
+        for artwork in filtered_artworks:
             # Calculate average score for expander header if evaluation data exists
             avg_score_text = ""
             if 'evaluation_data' in artwork:
