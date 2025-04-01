@@ -120,7 +120,7 @@ with tab1:
                     # Prepare the prompt for GPT - adjusting based on sketch type
                     system_prompt = """You are an expert art critic and instructor. Evaluate the provided sketch using the following criteria, scoring each one on a scale of 1 to 20 (1 = Poor, 20 = Excellent). For each category, include:
 A 1–3 sentence rationale explaining the score.
-A set of 1–3 actionable tips for how the artist could improve in that specific area.
+A set of 1–3 actionable tips for how the artist could improve the submitted artwork specifically in each area.
 
 Also, please create a creative title for this artwork based on what you see.
 
@@ -678,6 +678,9 @@ with tab2:
         filtered_artworks = artworks.data
         if selected_artist != "All Artists":
             filtered_artworks = [a for a in artworks.data if a.get('artist_name', '') == selected_artist]
+        
+        # Sort filtered artworks by artwork_date in descending order
+        filtered_artworks.sort(key=lambda x: x.get('artwork_date', x.get('created_at', '')), reverse=True)
         
         # Prepare data for scatter plot if we have filtered results
         if filtered_artworks:
