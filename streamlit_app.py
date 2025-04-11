@@ -1,4 +1,8 @@
 import streamlit as st
+import time
+
+print(f"[{time.time()}] Script started")
+
 from openai import OpenAI
 from utils.image_handler import upload_image
 from utils.db import insert_artwork, get_all_artworks
@@ -10,6 +14,8 @@ from io import BytesIO
 import json
 import pandas as pd
 import altair as alt
+
+print(f"[{time.time()}] Imports completed")
 
 # Function to adjust score on a curve (0-10 scale)
 def adjust_score_on_curve(raw_score):
@@ -30,15 +36,20 @@ st.set_page_config(
 )
 
 # Load environment variables (for local development)
+print(f"[{time.time()}] Loading environment variables...")
 load_dotenv()
+print(f"[{time.time()}] Environment variables loaded")
 
 # Show title and description
 st.title("🎨 Artwork Analysis")
 
 # Create tabs for the app
+print(f"[{time.time()}] Creating tabs...")
 tab1, tab2, tab3 = st.tabs(["Analyze Artwork", "Previous Analyses", "About"])
+print(f"[{time.time()}] Tabs created")
 
 with tab1:
+    print(f"[{time.time()}] Initializing Tab 1: Analyze Artwork")
     st.write("Upload an artwork image for evaluation!")
 
     # Get OpenAI API key from Streamlit secrets or environment
@@ -51,7 +62,9 @@ with tab1:
         st.error("OpenAI API key not found. Please set OPENAI_API_KEY in your Streamlit secrets or .env file.")
     else:
         # Create an OpenAI client
+        print(f"[{time.time()}] Creating OpenAI client...")
         client = OpenAI(api_key=openai_api_key)
+        print(f"[{time.time()}] OpenAI client created")
 
         # Get artist name first
         artist_name = st.text_input(
@@ -353,8 +366,8 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                                 "role": "system",
                                 "content": system_prompt
                             },
-                            {
-                                "role": "user",
+            {
+                "role": "user",
                                 "content": [
                                     {
                                         "type": "input_text",
@@ -656,12 +669,16 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                     except json.JSONDecodeError:
                         st.error("Error parsing the evaluation response. Please try again.")
                         st.markdown(response.output_text)
+    print(f"[{time.time()}] Tab 1 initialized")
 
 with tab2:
+    print(f"[{time.time()}] Initializing Tab 2: Previous Analyses")
     st.header("Previous Analyses")
     
     # Get all artworks first
+    print(f"[{time.time()}] Fetching all artworks from DB...")
     artworks = get_all_artworks()
+    print(f"[{time.time()}] Fetched {len(artworks.data) if artworks and artworks.data else 0} artworks")
     
     if artworks and artworks.data:
         # Extract list of unique artists for filter
@@ -757,7 +774,9 @@ with tab2:
                 ).interactive()
                 
                 # Display the chart
+                print(f"[{time.time()}] Rendering Altair chart...")
                 st.altair_chart(chart, use_container_width=True)
+                print(f"[{time.time()}] Altair chart rendered")
                 
                 # Add some insights if possible
                 if len(df_plot) > 1:
@@ -769,7 +788,9 @@ with tab2:
         
         # Display the filtered artworks
         st.subheader(f"{'All' if selected_artist == 'All Artists' else selected_artist}'s Artwork Evaluations")
-        for artwork in filtered_artworks:
+        print(f"[{time.time()}] Rendering artwork list...")
+        for index, artwork in enumerate(filtered_artworks):
+            print(f"[{time.time()}] Rendering artwork index {index}...")
             # Calculate average score for expander header if evaluation data exists
             avg_score_text = ""
             if 'evaluation_data' in artwork:
@@ -1070,8 +1091,12 @@ with tab2:
                                 st.markdown(f"- {tip}")
                 else:
                     st.write("**Analysis:**", artwork['gpt_response'])
+            print(f"[{time.time()}] Rendered artwork index {index}")
+        print(f"[{time.time()}] Artwork list rendered")
+    print(f"[{time.time()}] Tab 2 initialized")
 
 with tab3:
+    print(f"[{time.time()}] Initializing Tab 3: About")
     st.header("About Ruggles Artwork Analysis")
     
     st.markdown("""
@@ -1109,3 +1134,6 @@ with tab3:
     """)
     
     st.info("Ruggles is designed to provide constructive feedback to help artists improve their skills. The evaluations are meant to be helpful and encouraging, not discouraging or harsh.")
+    print(f"[{time.time()}] Tab 3 initialized")
+
+print(f"[{time.time()}] Script finished loading")
