@@ -41,7 +41,7 @@ load_dotenv()
 print(f"[{time.time()}] Environment variables loaded")
 
 # Show title and description
-st.title("🎨 Artwork Analysis")
+st.title("🎨 Ruggles Artwork Analysis")
 
 # Create tabs for the app
 print(f"[{time.time()}] Creating tabs...")
@@ -50,7 +50,7 @@ print(f"[{time.time()}] Tabs created")
 
 with tab1:
     print(f"[{time.time()}] Initializing Tab 1: Analyze Artwork")
-    st.write("Upload an artwork image for evaluation!")
+    st.write("Upload an artwork image for evaluation! Now with o3!")
 
     # Get OpenAI API key from Streamlit secrets or environment
     try:
