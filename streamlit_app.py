@@ -24,9 +24,9 @@ def adjust_score_on_curve(raw_score):
     - Subtract 8 from raw score (minimum 0)
     - Scores of 18-20 all become 10
     """
-    if raw_score >= 18:
+    if raw_score >= 16:
         return 10
-    adjusted = raw_score - 8
+    adjusted = raw_score - 6
     return max(0, adjusted)
 
 # Set page config (must be the first Streamlit command)
@@ -136,6 +136,7 @@ A 1–3 sentence rationale explaining the score.
 A set of 1–3 actionable tips for how the artist could improve the submitted artwork specifically in each area.
 
 Also, please create a creative title for this artwork based on what you see.
+If you recognize a character, object, or location, please include that in the title.
 
 Evaluation Criteria:
 Proportion & Structure – Are the relative sizes and shapes of elements accurate and well-constructed?
@@ -360,7 +361,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
 
                     # Generate an answer using the OpenAI API
                     response = client.responses.create(
-                        model="gpt-4o-mini",
+                        model="o3",
                         input=[
                             {
                                 "role": "system",
