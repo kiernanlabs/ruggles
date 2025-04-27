@@ -21,13 +21,15 @@ print(f"[{time.time()}] Imports completed")
 def adjust_score_on_curve(raw_score):
     """
     Convert raw score (1-20) to curved score (0-10):
-    - Subtract 8 from raw score (minimum 0)
-    - Scores of 18-20 all become 10
-    """
+    - Subtract 6 from raw score (minimum 0)
+    - Scores of 16-20 all become 10
+
     if raw_score >= 16:
         return 10
     adjusted = raw_score - 6
     return max(0, adjusted)
+    """
+    return raw_score # do not filter
 
 # Set page config (must be the first Streamlit command)
 st.set_page_config(
@@ -413,7 +415,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             results_data.append({
                                 "Criteria": "Proportion & Structure",
                                 "Raw Score": f"{raw_score}/20",
-                                "Curved Score": f"{curved_score}/10",
+                                "Curved Score": f"{curved_score}/20",
                                 "Rationale": ps_data['rationale']
                             })
                         
@@ -425,7 +427,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             results_data.append({
                                 "Criteria": "Line Quality",
                                 "Raw Score": f"{raw_score}/20",
-                                "Curved Score": f"{curved_score}/10",
+                                "Curved Score": f"{curved_score}/20",
                                 "Rationale": lq_data['rationale']
                             })
                         
@@ -436,7 +438,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             results_data.append({
                                 "Criteria": "Value & Light",
                                 "Raw Score": f"{vl_data['score']}/20",
-                                "Curved Score": f"{adjust_score_on_curve(vl_data['score'])}/10",
+                                "Curved Score": f"{adjust_score_on_curve(vl_data['score'])}/20",
                                 "Rationale": vl_data['rationale']
                             })
                             
@@ -445,7 +447,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             results_data.append({
                                 "Criteria": "Detail & Texture",
                                 "Raw Score": f"{dt_data['score']}/20",
-                                "Curved Score": f"{adjust_score_on_curve(dt_data['score'])}/10",
+                                "Curved Score": f"{adjust_score_on_curve(dt_data['score'])}/20",
                                 "Rationale": dt_data['rationale']
                             })
                             
@@ -454,7 +456,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                             results_data.append({
                                 "Criteria": "Composition & Perspective",
                                 "Raw Score": f"{cp_data['score']}/20",
-                                "Curved Score": f"{adjust_score_on_curve(cp_data['score'])}/10",
+                                "Curved Score": f"{adjust_score_on_curve(cp_data['score'])}/20",
                                 "Rationale": cp_data['rationale']
                             })
                         
@@ -463,7 +465,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         results_data.append({
                             "Criteria": "Form & Volume",
                             "Raw Score": f"{fv_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(fv_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(fv_data['score'])}/20",
                             "Rationale": fv_data['rationale']
                         })
                         
@@ -472,7 +474,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         results_data.append({
                             "Criteria": "Mood & Expression",
                             "Raw Score": f"{me_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(me_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(me_data['score'])}/20",
                             "Rationale": me_data['rationale']
                         })
                         
@@ -504,7 +506,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         
                         avg_score = sum(scores) / len(scores)
                         curved_avg_score = adjust_score_on_curve(avg_score)
-                        avg_score_text = f" - Curved: {curved_avg_score:.1f}/10"
+                        avg_score_text = f" - Curved: {curved_avg_score:.1f}/20"
                         
                         # Add average score row with a note about which criteria were included
                         if sketch_type == 'quick sketch':
@@ -515,7 +517,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
                         results_data.append({
                             "Criteria": "Average Score",
                             "Raw Score": f"{avg_score:.1f}/20",
-                            "Curved Score": f"{curved_avg_score:.1f}/10",
+                            "Curved Score": f"{curved_avg_score:.1f}/20",
                             "Rationale": avg_note
                         })
                         
@@ -759,7 +761,7 @@ with tab2:
                 # Create scatter plot with Altair - simple version with no custom padding
                 chart = alt.Chart(df_plot).mark_circle(size=100).encode(
                     x=alt.X('date:T', title='Date Artwork Created'),
-                    y=alt.Y('curved_score:Q', title='Average Curved Score', scale=alt.Scale(domain=[0, 10])),
+                    y=alt.Y('curved_score:Q', title='Average Curved Score', scale=alt.Scale(domain=[0, 20])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
                     tooltip=[
                         alt.Tooltip('title', title='Title'),
@@ -783,9 +785,9 @@ with tab2:
                 if len(df_plot) > 1:
                     recent_avg = df_plot.sort_values('date', ascending=False).head(3)['curved_score'].mean()
                     if selected_artist != "All Artists":
-                        st.caption(f"Recent average curved score for {selected_artist}: {recent_avg:.1f}/10")
+                        st.caption(f"Recent average curved score for {selected_artist}: {recent_avg:.1f}/20")
                     else:
-                        st.caption(f"Recent average curved score across artists: {recent_avg:.1f}/10")
+                        st.caption(f"Recent average curved score across artists: {recent_avg:.1f}/20")
         
         # Display the filtered artworks
         st.subheader(f"{'All' if selected_artist == 'All Artists' else selected_artist}'s Artwork Evaluations")
@@ -825,7 +827,7 @@ with tab2:
                 if scores:
                     avg_score = sum(scores) / len(scores)
                     curved_avg_score = adjust_score_on_curve(avg_score)
-                    avg_score_text = f" - Curved: {curved_avg_score:.1f}/10"
+                    avg_score_text = f" - Curved: {curved_avg_score:.1f}/20"
             
             # Format the date to show only YYYY-MM-DD
             created_date = artwork['created_at'].split('T')[0] if 'T' in artwork['created_at'] else artwork['created_at']
@@ -862,7 +864,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Proportion & Structure",
                             "Raw Score": f"{raw_score}/20",
-                            "Curved Score": f"{curved_score}/10",
+                            "Curved Score": f"{curved_score}/20",
                             "Rationale": ps_data['rationale']
                         })
                     
@@ -874,7 +876,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Line Quality",
                             "Raw Score": f"{raw_score}/20",
-                            "Curved Score": f"{curved_score}/10",
+                            "Curved Score": f"{curved_score}/20",
                             "Rationale": lq_data['rationale']
                         })
                     
@@ -884,7 +886,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Value & Light",
                             "Raw Score": f"{vl_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(vl_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(vl_data['score'])}/20",
                             "Rationale": vl_data['rationale']
                         })
                     
@@ -893,7 +895,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Detail & Texture",
                             "Raw Score": f"{dt_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(dt_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(dt_data['score'])}/20",
                             "Rationale": dt_data['rationale']
                         })
                     
@@ -902,7 +904,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Composition & Perspective",
                             "Raw Score": f"{cp_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(cp_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(cp_data['score'])}/20",
                             "Rationale": cp_data['rationale']
                         })
                     
@@ -911,7 +913,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Form & Volume",
                             "Raw Score": f"{fv_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(fv_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(fv_data['score'])}/20",
                             "Rationale": fv_data['rationale']
                         })
                     
@@ -920,7 +922,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Mood & Expression",
                             "Raw Score": f"{me_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(me_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(me_data['score'])}/20",
                             "Rationale": me_data['rationale']
                         })
                     
@@ -929,7 +931,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Overall Realism",
                             "Raw Score": f"{or_data['score']}/20",
-                            "Curved Score": f"{adjust_score_on_curve(or_data['score'])}/10",
+                            "Curved Score": f"{adjust_score_on_curve(or_data['score'])}/20",
                             "Rationale": or_data['rationale']
                         })
                     
@@ -937,7 +939,7 @@ with tab2:
                     if scores:
                         avg_score = sum(scores) / len(scores)
                         curved_avg_score = adjust_score_on_curve(avg_score)
-                        avg_score_text = f" - Curved: {curved_avg_score:.1f}/10"
+                        avg_score_text = f" - Curved: {curved_avg_score:.1f}/20"
                         
                         # Add average score row with a note about which criteria were included
                         if sketch_type == 'quick sketch':
@@ -948,7 +950,7 @@ with tab2:
                         results_data.append({
                             "Criteria": "Average Score",
                             "Raw Score": f"{avg_score:.1f}/20",
-                            "Curved Score": f"{curved_avg_score:.1f}/10",
+                            "Curved Score": f"{curved_avg_score:.1f}/20",
                             "Rationale": avg_note
                         })
                     
