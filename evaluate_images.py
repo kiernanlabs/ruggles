@@ -137,21 +137,39 @@ def get_all_artworks():
             return None
 
 class ArtworkEvaluator:
-    def __init__(self, model_name="gpt-4.1-2025-04-14", csv_output_path="evaluation_results.csv", sketch_type="full realism", limit=5):
+    def __init__(self, model_name="gpt-4.1-2025-04-14", csv_output_path=None, sketch_type="full realism", limit=5):
         """
         Initialize the evaluator with configurable model and output path.
         
         Args:
             model_name (str): The OpenAI model to use for image evaluation
-            csv_output_path (str): File path for the CSV output
+            csv_output_path (str): File path for the CSV output (if None, a default path will be generated)
             sketch_type (str): Type of evaluation ("quick sketch" or "full realism")
             limit (int): Maximum number of artworks to evaluate (default: 5)
         """
         self.model_name = model_name
-        self.csv_output_path = csv_output_path
-        self.sketch_type = sketch_type  # "quick sketch" or "full realism"
-        self.limit = limit  # Maximum number of artworks to evaluate
+        
+        # Create reports directory if it doesn't exist
+        reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+        os.makedirs(reports_dir, exist_ok=True)
+        
+        # Generate default output path with timestamp and model name if not provided
+        if csv_output_path is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            # Clean up model name for filename (remove dots and special chars)
+            clean_model_name = model_name.replace('.', '-').replace('/', '_')
+            self.csv_output_path = os.path.join(reports_dir, f"evaluation_{clean_model_name}_{timestamp}.csv")
+        else:
+            # If path is provided but doesn't include directory, put it in reports folder
+            if os.path.dirname(csv_output_path) == '':
+                self.csv_output_path = os.path.join(reports_dir, csv_output_path)
+            else:
+                self.csv_output_path = csv_output_path
+                
+        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.evaluation_prompt = self._get_default_prompt()
+        self.sketch_type = sketch_type
+        self.limit = limit
         
         # Initialize OpenAI client
         openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -735,7 +753,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="Evaluate artwork images using AI.")
     parser.add_argument("--model", default="gpt-4.1-2025-04-14", help="OpenAI model to use")
-    parser.add_argument("--output", default="evaluation_results.csv", help="Output CSV file path")
+    parser.add_argument("--output", help="Output CSV file path (if not specified, a file will be created in the reports directory with timestamp and model name)")
     parser.add_argument("--prompt-file", help="Path to a text file containing a custom evaluation prompt")
     parser.add_argument("--sketch-type", default="full realism", choices=["quick sketch", "full realism"], 
                        help="Type of evaluation to perform")

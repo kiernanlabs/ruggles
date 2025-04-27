@@ -758,10 +758,16 @@ with tab2:
                 df_plot = pd.DataFrame(plot_data)
                 df_plot['date'] = pd.to_datetime(df_plot['date'])
                 
-                # Create scatter plot with Altair - simple version with no custom padding
+                # Calculate min and max scores for dynamic y-axis range
+                min_score = max(0, df_plot['curved_score'].min() - 1)  # Floor at 0
+                max_score = min(20, df_plot['curved_score'].max() + 1)  # Ceiling at 20
+                
+                # Create scatter plot with Altair using dynamic y-axis range
                 chart = alt.Chart(df_plot).mark_circle(size=100).encode(
                     x=alt.X('date:T', title='Date Artwork Created'),
-                    y=alt.Y('curved_score:Q', title='Average Curved Score', scale=alt.Scale(domain=[0, 20])),
+                    y=alt.Y('curved_score:Q', 
+                           title='Average Curved Score', 
+                           scale=alt.Scale(domain=[min_score, max_score])),
                     color=alt.Color('sketch_type:N', title='Evaluation Type'),
                     tooltip=[
                         alt.Tooltip('title', title='Title'),

@@ -18,7 +18,7 @@ def init_supabase() -> Client:
     
     return create_client(supabase_url, supabase_key)
 
-def update_artwork_from_csv(csv_path="evaluation_results.csv"):
+def update_artwork_from_csv(csv_path):
     """
     Update artwork records in Supabase with data from evaluation_results.csv
     
@@ -154,6 +154,13 @@ def parse_tips(tips_string):
     return tips
 
 if __name__ == "__main__":
-    print("Starting database update from evaluation results CSV...")
-    update_artwork_from_csv()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Update artwork records in Supabase with data from evaluation CSV file.")
+    parser.add_argument("csv_file", help="Path to the evaluation results CSV file")
+    
+    args = parser.parse_args()
+    
+    print(f"Starting database update from {args.csv_file}...")
+    update_artwork_from_csv(args.csv_file)
     print("Database update completed.")
