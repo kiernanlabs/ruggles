@@ -90,7 +90,7 @@ with tab1:
 
         # Display the uploaded image if available
         if uploaded_file:
-            st.image(uploaded_file, caption="Uploaded Artwork", use_container_width=True)
+            st.image(uploaded_file, caption="Uploaded Artwork", width='stretch')
             
         # Add toggle for sketch type
         col1, col2, col3 = st.columns([2, 2, 2])
@@ -363,7 +363,7 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
 
                     # Generate an answer using the OpenAI API
                     response = client.responses.create(
-                        model="o3",
+                        model="gpt-5.4",
                         input=[
                             {
                                 "role": "system",
@@ -681,23 +681,23 @@ with tab2:
     # Get all artworks first
     print(f"[{time.time()}] Fetching all artworks from DB...")
     artworks = get_all_artworks()
-    print(f"[{time.time()}] Fetched {len(artworks.data) if artworks and artworks.data else 0} artworks")
-    
-    if artworks and artworks.data:
+    print(f"[{time.time()}] Fetched {len(artworks) if artworks else 0} artworks")
+
+    if artworks:
         # Extract list of unique artists for filter
-        all_artists = sorted(list(set([artwork.get('artist_name', '') for artwork in artworks.data if artwork.get('artist_name', '')])))
-        
+        all_artists = sorted(list(set([artwork.get('artist_name', '') for artwork in artworks if artwork.get('artist_name', '')])))
+
         # Add filter for artist name
         selected_artist = st.selectbox(
             "Filter by Artist",
             options=["All Artists"] + all_artists,
             index=0
         )
-        
+
         # Filter artworks by selected artist
-        filtered_artworks = artworks.data
+        filtered_artworks = artworks
         if selected_artist != "All Artists":
-            filtered_artworks = [a for a in artworks.data if a.get('artist_name', '') == selected_artist]
+            filtered_artworks = [a for a in artworks if a.get('artist_name', '') == selected_artist]
         
         # Sort filtered artworks by artwork_date in descending order
         filtered_artworks.sort(key=lambda x: x.get('artwork_date', x.get('created_at', '')), reverse=True)
@@ -784,7 +784,7 @@ with tab2:
                 
                 # Display the chart
                 print(f"[{time.time()}] Rendering Altair chart...")
-                st.altair_chart(chart, use_container_width=True)
+                st.altair_chart(chart, width='stretch')
                 print(f"[{time.time()}] Altair chart rendered")
                 
                 # Add some insights if possible
@@ -853,7 +853,7 @@ with tab2:
             title_display = f" - \"{artwork_title}\""
                 
             with st.expander(f"Artwork by {artwork['artist_name']}{title_display} - {created_date}{artwork_date_display}{sketch_type_display}{avg_score_text}"):
-                st.image(artwork['image_url'], caption=artwork['title'], use_container_width=True)
+                st.image(artwork['image_url'], caption=artwork['title'], width='stretch')
                 
                 # Display evaluation data if available
                 if 'evaluation_data' in artwork:
@@ -1110,7 +1110,7 @@ with tab3:
     
     st.markdown("""
     ### How It Works
-    Ruggles uses GPT-4o-mini to analyze and provide constructive feedback on artwork. The AI evaluates key aspects of your sketch based on the evaluation type you select.
+    Ruggles uses openAI to analyze and provide constructive feedback on artwork. The AI evaluates key aspects of your sketch based on the evaluation type you select.
     
     #### Quick Sketch Mode
     Focuses on four fundamental aspects:

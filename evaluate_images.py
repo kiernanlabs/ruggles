@@ -12,14 +12,20 @@ import csv
 import time
 import json
 import pandas as pd
+from decimal import Decimal
 from dotenv import load_dotenv
 from openai import OpenAI
-from supabase import create_client, Client
+import boto3
+from boto3.dynamodb.conditions import Key
 from datetime import datetime
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 from io import BytesIO
+
+DYNAMODB_TABLE = "ruggles_artworks_prod"
+DYNAMODB_GSI = "by_created_at"
+ENTITY_TYPE = "artwork"
 
 # Load environment variables
 load_dotenv()
@@ -54,87 +60,83 @@ def get_image_url(public_id, transformation=None):
         return None
 
 # Custom implementation of database functions to avoid Streamlit dependencies
-def init_supabase() -> Client:
-    """Initialize Supabase client without using Streamlit cache"""
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
-    
-    if not supabase_url or not supabase_key:
-        print("Error: Missing Supabase credentials. Please set SUPABASE_URL and SUPABASE_KEY in your .env file.")
+_EVAL_GROUPS = [
+    ("proportion_and_structure", "proportion"),
+    ("line_quality", "line_quality"),
+    ("value_and_light", "value_light"),
+    ("detail_and_texture", "detail_texture"),
+    ("composition_and_perspective", "composition_perspective"),
+    ("form_and_volume", "form_volume"),
+    ("mood_and_expression", "mood_expression"),
+    ("overall_realism", "overall_realism"),
+]
+
+
+def init_dynamodb():
+    """Initialize DynamoDB Table resource (no Streamlit dependency)."""
+    region = os.getenv("AWS_REGION", "us-east-1")
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+    if not access_key or not secret_key:
+        print("Error: Missing AWS credentials. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env file.")
         return None
-    
-    return create_client(supabase_url, supabase_key)
+
+    return boto3.resource(
+        "dynamodb",
+        region_name=region,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+    ).Table(DYNAMODB_TABLE)
+
+
+def _to_native(value):
+    # boto3 returns Decimal for DDB Number; convert to int/float.
+    if isinstance(value, Decimal):
+        return int(value) if value == value.to_integral_value() else float(value)
+    if isinstance(value, list):
+        return [_to_native(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _to_native(v) for k, v in value.items()}
+    return value
+
+
+def _structure_evaluation(item: dict) -> dict:
+    eval_data = {}
+    for pretty, flat in _EVAL_GROUPS:
+        score_key = f"{flat}_score"
+        if score_key in item:
+            eval_data[pretty] = {
+                "score": item.pop(score_key, 0),
+                "rationale": item.pop(f"{flat}_rationale", ""),
+                "improvement_tips": item.pop(f"{flat}_tips", []),
+            }
+    item["evaluation_data"] = eval_data
+    return item
+
 
 def get_all_artworks():
-    """Get all artworks with their evaluations without using Streamlit"""
-    supabase = init_supabase()
-    if supabase:
-        try:
-            result = supabase.table("artworks").select("*").order('created_at', desc=True).execute()
-            
-            # Transform the data to include structured evaluation
-            if result and result.data:
-                for artwork in result.data:
-                    artwork['evaluation_data'] = {
-                        'proportion_and_structure': {
-                            'score': artwork.pop('proportion_score', 0),
-                            'rationale': artwork.pop('proportion_rationale', ''),
-                            'improvement_tips': artwork.pop('proportion_tips', [])
-                        },
-                        'line_quality': {
-                            'score': artwork.pop('line_quality_score', 0),
-                            'rationale': artwork.pop('line_quality_rationale', ''),
-                            'improvement_tips': artwork.pop('line_quality_tips', [])
-                        }
-                    }
-                    
-                    # Add new evaluation criteria if they exist in the database
-                    if 'value_light_score' in artwork:
-                        artwork['evaluation_data']['value_and_light'] = {
-                            'score': artwork.pop('value_light_score', 0),
-                            'rationale': artwork.pop('value_light_rationale', ''),
-                            'improvement_tips': artwork.pop('value_light_tips', [])
-                        }
-                    
-                    if 'detail_texture_score' in artwork:
-                        artwork['evaluation_data']['detail_and_texture'] = {
-                            'score': artwork.pop('detail_texture_score', 0),
-                            'rationale': artwork.pop('detail_texture_rationale', ''),
-                            'improvement_tips': artwork.pop('detail_texture_tips', [])
-                        }
-                    
-                    if 'composition_perspective_score' in artwork:
-                        artwork['evaluation_data']['composition_and_perspective'] = {
-                            'score': artwork.pop('composition_perspective_score', 0),
-                            'rationale': artwork.pop('composition_perspective_rationale', ''),
-                            'improvement_tips': artwork.pop('composition_perspective_tips', [])
-                        }
-                    
-                    if 'form_volume_score' in artwork:
-                        artwork['evaluation_data']['form_and_volume'] = {
-                            'score': artwork.pop('form_volume_score', 0),
-                            'rationale': artwork.pop('form_volume_rationale', ''),
-                            'improvement_tips': artwork.pop('form_volume_tips', [])
-                        }
-                    
-                    if 'mood_expression_score' in artwork:
-                        artwork['evaluation_data']['mood_and_expression'] = {
-                            'score': artwork.pop('mood_expression_score', 0),
-                            'rationale': artwork.pop('mood_expression_rationale', ''),
-                            'improvement_tips': artwork.pop('mood_expression_tips', [])
-                        }
-                    
-                    if 'overall_realism_score' in artwork:
-                        artwork['evaluation_data']['overall_realism'] = {
-                            'score': artwork.pop('overall_realism_score', 0),
-                            'rationale': artwork.pop('overall_realism_rationale', ''),
-                            'improvement_tips': artwork.pop('overall_realism_tips', [])
-                        }
-            
-            return result
-        except Exception as e:
-            print(f"Error querying data: {str(e)}")
-            return None
+    """Return a list of all artworks, newest first, with nested evaluation_data."""
+    table = init_dynamodb()
+    if not table:
+        return []
+    try:
+        items = []
+        kwargs = {
+            "IndexName": DYNAMODB_GSI,
+            "KeyConditionExpression": Key("entity_type").eq(ENTITY_TYPE),
+            "ScanIndexForward": False,
+        }
+        while True:
+            resp = table.query(**kwargs)
+            items.extend(resp.get("Items", []))
+            if "LastEvaluatedKey" not in resp:
+                break
+            kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+        return [_structure_evaluation(_to_native(i)) for i in items]
+    except Exception as e:
+        print(f"Error querying data: {str(e)}")
+        return []
 
 class ArtworkEvaluator:
     def __init__(self, model_name="gpt-4.1-2025-04-14", csv_output_path=None, sketch_type="full realism", limit=5):
@@ -179,9 +181,10 @@ class ArtworkEvaluator:
         
         # Initialize Cloudinary
         init_cloudinary()
-        
-        # Initialize Supabase
-        init_supabase()
+
+        # Initialize DynamoDB (validates credentials up front)
+        if init_dynamodb() is None:
+            raise ValueError("Failed to initialize DynamoDB client. Check AWS credentials.")
     
     def _get_default_prompt(self):
         """Return the default evaluation prompt."""
@@ -225,13 +228,13 @@ Overall Realism – How realistic is the overall sketch in terms of visual belie
         """Retrieve all artworks from the database."""
         print("Retrieving all artworks from the database...")
         artworks = get_all_artworks()
-        
-        if not artworks or not artworks.data:
+
+        if not artworks:
             print("No artworks found in the database.")
             return []
-        
-        print(f"Retrieved {len(artworks.data)} artworks.")
-        return artworks.data
+
+        print(f"Retrieved {len(artworks)} artworks.")
+        return artworks
     
     def evaluate_image(self, artwork):
         """
