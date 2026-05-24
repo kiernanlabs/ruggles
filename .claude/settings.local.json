@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xxd)",
+      "Bash(grep -n \"^\\\\\\\\\\\\\\\\\\\\.\" \"C:/Users/joey3/OneDrive/Kiernanlabs/Ruggles/db_cluster-17-07-2025@20-26-32.backup\")"
+    ]
+  }
+}
