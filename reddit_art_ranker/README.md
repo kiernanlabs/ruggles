@@ -21,15 +21,36 @@ All state lives in `reddit_rankings.db` (SQLite, sibling of this file).
 ## Setup
 
 1. `pip install -r ../requirements.txt`
-2. Create a Reddit script app at <https://www.reddit.com/prefs/apps>
-3. Add to your `.env`:
+2. Get an OpenRouter API key at <https://openrouter.ai/keys>
+3. (Only if using `fetch_reddit.py`) Create a Reddit script app at <https://www.reddit.com/prefs/apps>
+4. Add to your `.env`:
 
    ```
+   OPENROUTER_API_KEY=sk-or-...
+   # Optional — only needed for fetch_reddit.py (pushshift dump path doesn't need them):
    REDDIT_CLIENT_ID=...
    REDDIT_CLIENT_SECRET=...
    REDDIT_USER_AGENT=ruggles-art-ranker/0.1 by u/your_username
-   OPENAI_API_KEY=...   # already set if you've used evaluate_images.py
    ```
+
+### Picking a model
+
+Set `LLM_MODEL` in `.env` or pass `--model` to rank/insert. Model slugs follow
+OpenRouter's `provider/model` convention. The model must support **vision**
+(image inputs) and ideally JSON schema response formats. A few solid options:
+
+| Slug | Notes |
+| --- | --- |
+| `openai/gpt-5.4-mini` (default) | Current behavior — strong, fast vision, strict JSON schema |
+| `openai/gpt-5-mini` | Slightly cheaper, similar quality |
+| `anthropic/claude-haiku-4.5` | Different judgment style, fast, cheap |
+| `google/gemini-2.5-flash` | Very cheap, fast, strong vision |
+| `qwen/qwen2.5-vl-72b-instruct` | Open weights, very cheap |
+| `x-ai/grok-4-fast` | Fast, cheap, vision-capable |
+
+The model name is recorded with every comparison in the `comparisons` table,
+so you can mix models across runs and audit later. Run `analyze.py` to see the
+distribution.
 
 ## Usage
 

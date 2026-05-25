@@ -1,0 +1,1143 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Model comparison · gpt-5.4-mini vs google/gemini-3.1-flash-lite</title>
+<style>
+body { font-family: -apple-system, Segoe UI, sans-serif; max-width: 1200px;
+       margin: 24px auto; padding: 0 16px; color: #222; }
+h1 { margin: 0 0 6px; }
+h2 { margin-top: 32px; padding-bottom: 6px; border-bottom: 2px solid #eee; }
+.meta { color: #666; font-size: 13px; margin-bottom: 24px; }
+.model-key { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+.model-key .chip { padding: 10px 14px; border-radius: 6px;
+                   background: #f6f8fa; }
+.model-key .chip .label { font-size: 11px; color: #666; text-transform: uppercase;
+                          letter-spacing: 0.04em; }
+.model-key .chip .name { font-family: ui-monospace, Menlo, Consolas, monospace;
+                         font-weight: 600; font-size: 15px; }
+.chip.A { border-left: 4px solid #8e44ad; }
+.chip.B { border-left: 4px solid #16a085; }
+
+table.metrics { border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+table.metrics th, table.metrics td { padding: 8px 14px; border-bottom: 1px solid #eee;
+                                      text-align: left; }
+table.metrics th { background: #fafafa; font-size: 12px; text-transform: uppercase;
+                   color: #666; letter-spacing: 0.04em; }
+table.metrics td.num { font-variant-numeric: tabular-nums; text-align: right; }
+.delta.pos { color: #16a085; font-weight: 600; }
+.delta.neg { color: #c0392b; font-weight: 600; }
+
+.mover-grid { display: grid; grid-template-columns: 220px 1fr; gap: 18px;
+              margin-bottom: 22px; padding: 14px; border: 1px solid #eee;
+              border-radius: 6px; }
+.mover-thumb { width: 200px; height: 200px; object-fit: cover; border-radius: 4px;
+               background: #eee; display: block; }
+.mover-title { font-weight: 600; margin-bottom: 4px; font-size: 16px; }
+.mover-meta { color: #555; font-size: 12px; margin-bottom: 12px; }
+.mover-meta a { color: #0366d6; text-decoration: none; margin-right: 10px; }
+.rank-row { display: grid; grid-template-columns: 80px 80px 80px 1fr; gap: 14px;
+            margin-bottom: 10px; align-items: center; font-size: 13px; }
+.rank-box { background: #f6f8fa; padding: 8px 10px; border-radius: 4px;
+            text-align: center; font-variant-numeric: tabular-nums; }
+.rank-box .label { font-size: 10px; color: #666; text-transform: uppercase; }
+.rank-box .val { font-size: 17px; font-weight: 600; }
+.rank-box.A { border-left: 3px solid #8e44ad; }
+.rank-box.B { border-left: 3px solid #16a085; }
+.rationale-row { padding: 8px 12px; border-radius: 4px; margin-top: 6px;
+                 font-size: 13px; line-height: 1.4; }
+.rationale-row.A { background: #f8f4fb; border-left: 3px solid #8e44ad; }
+.rationale-row.B { background: #f0faf6; border-left: 3px solid #16a085; }
+.rationale-row .label { font-family: ui-monospace, Menlo, Consolas, monospace;
+                        font-size: 11px; color: #666; margin-bottom: 4px; }
+.consensus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+                  gap: 12px; margin-top: 12px; }
+.consensus-card { padding: 8px; border: 1px solid #eee; border-radius: 4px; }
+.consensus-card img { width: 100%; aspect-ratio: 1; object-fit: cover;
+                      border-radius: 3px; background: #eee; }
+.consensus-card .ranks { font-size: 11px; color: #666; margin-top: 6px;
+                         font-variant-numeric: tabular-nums; }
+.consensus-card .title { font-size: 12px; margin-top: 2px;
+                         display: -webkit-box; -webkit-line-clamp: 2;
+                         -webkit-box-orient: vertical; overflow: hidden; }
+.exclusion-list { font-size: 13px; margin-top: 12px; }
+.exclusion-list tr td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; }
+.exclusion-list img.mini { width: 50px; height: 50px; object-fit: cover;
+                           border-radius: 3px; vertical-align: middle; }
+</style></head><body>
+<h1>Model comparison · gpt-5.4-mini vs google/gemini-3.1-flash-lite</h1>
+<div class="meta">
+  Generated 2026-05-24 21:02 · subreddit r/Watercolor ·
+  411 pieces eligible in both runs (excluded by either: 89)
+</div>
+
+<div class="model-key">
+  <div class="chip A">
+    <div class="label">Model A</div>
+    <div class="name">gpt-5.4-mini</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">
+      run #1 · 500-piece-baseline ·
+      excl=63
+    </div>
+  </div>
+  <div class="chip B">
+    <div class="label">Model B</div>
+    <div class="name">google/gemini-3.1-flash-lite</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">
+      run #2 · 500-piece-rerun ·
+      excl=78
+    </div>
+  </div>
+</div>
+
+<h2>Summary metrics</h2>
+
+    <table class="metrics">
+      <thead><tr>
+        <th>Metric</th>
+        <th class="num">Model A<br><small>gpt-5.4-mini</small></th>
+        <th class="num">Model B<br><small>google/gemini-3.1-flash-lite</small></th>
+        <th class="num">Δ (B − A)</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Pieces excluded as not-art (≥2 flags)</td>
+            <td class="num">63</td>
+            <td class="num">78</td>
+            <td class="num"><span class='delta neg'>+15</span></td></tr>
+        <tr><td>Spearman ρ vs upvotes</td>
+            <td class="num">+0.285</td>
+            <td class="num">+0.385</td>
+            <td class="num">+0.100</td></tr>
+        <tr><td>Spearman ρ vs upvote_ratio</td>
+            <td class="num">+0.251</td>
+            <td class="num">+0.307</td>
+            <td class="num">+0.056</td></tr>
+        <tr><td>Spearman ρ vs num_comments</td>
+            <td class="num">+0.143</td>
+            <td class="num">+0.192</td>
+            <td class="num">+0.048</td></tr>
+        <tr><td colspan="4" style="text-align:center; background:#f6f8fa;">
+            <b>Model agreement (A vs B):</b>
+            Spearman ρ = <code>+0.625</code>
+            · 411 pieces eligible in both
+        </td></tr>
+      </tbody>
+    </table>
+    
+
+<h2>Where they agree — top 10 ∩ top 10</h2>
+<div class="consensus-grid">
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/1jb2wam/watercolour_painting_by_my_friend_maxi_svensson/" target="_blank">
+                    <img src="https://i.redd.it/w64qu741hnoe1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#1 · B:#4 ·
+                    1791↑</div>
+                <div class="title">Watercolour painting by my friend Maxi Svensson. He can’t se</div>
+            </div>
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/1bygbtf/watercolor_by_kris_krupinski/" target="_blank">
+                    <img src="https://i.redd.it/ypku94bkn4tc1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#6 · B:#5 ·
+                    692↑</div>
+                <div class="title">Watercolor  by Kris Krupinski</div>
+            </div></div>
+
+<h2>Where they agree — bottom 10 ∩ bottom 10</h2>
+<div class="consensus-grid">
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/1ag5wwe/also_painted_this_super_mario_inspired_scene_very/" target="_blank">
+                    <img src="https://i.redd.it/cwmm0outkxfc1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#407 · B:#409 ·
+                    21↑</div>
+                <div class="title">Also painted this Super Mario inspired scene, very fun 👾</div>
+            </div>
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/1oe9urj/new_to_drawingwatercolour_made_this_for_my_1_year/" target="_blank">
+                    <img src="https://i.redd.it/mnrl4mtkewwf1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#408 · B:#406 ·
+                    146↑</div>
+                <div class="title">New to drawing/watercolour. Made this for my 1 year olds roo</div>
+            </div>
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/198g9zl/puffer_snoopy_is_unbothered/" target="_blank">
+                    <img src="https://i.redd.it/ylz8e5m1rvcc1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#410 · B:#403 ·
+                    335↑</div>
+                <div class="title">Puffer Snoopy is unbothered</div>
+            </div>
+            <div class="consensus-card">
+                <a href="https://reddit.com/r/Watercolor/comments/1owcj8n/quick_fox_sketch/" target="_blank">
+                    <img src="https://i.redd.it/4igtw1o3731g1.jpeg" alt="" loading="lazy">
+                </a>
+                <div class="ranks">A:#406 · B:#407 ·
+                    77↑</div>
+                <div class="title">quick fox sketch!</div>
+            </div></div>
+
+<h2>Biggest disagreements (top 25 rank movers)</h2>
+<p style="font-size:13px;color:#666;">
+Negative Δ = B (gemini) liked it more than A. Positive Δ = A (gpt) liked it more.
+Each piece shows both models' representative rationale (most recent comparison
+that included this piece).
+</p>
+
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/xf162tuq7zme1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/xf162tuq7zme1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Hazy midwestern day</div>
+                <div class="mover-meta">
+                    <code>1j4ki6s</code> · 24 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1j4ki6s/hazy_midwestern_day/" target="_blank">reddit</a>
+                    · <em>B liked it <b>319</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">360</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">41</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-319</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The landscape is very atmospheric, but the extremely pale handling leaves the scene underdeveloped and visually thin, with few anchored focal details.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Exceptional atmospheric perspective and subtle control of limited cool-to-warm tonal shifts create a highly evocative and meditative landscape.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://preview.redd.it/um0ov8171pjf1.jpg?width=2503&amp;format=pjpg&amp;auto=webp&amp;s=c7dff621db797553563ef3a94407312252dead7a" target="_blank">
+                    <img class="mover-thumb" src="https://preview.redd.it/um0ov8171pjf1.jpg?width=2503&amp;format=pjpg&amp;auto=webp&amp;s=c7dff621db797553563ef3a94407312252dead7a" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Watercolor portrait 🖌️</div>
+                <div class="mover-meta">
+                    <code>1mtaj3u</code> · 70 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1mtaj3u/watercolor_portrait/" target="_blank">reddit</a>
+                    · <em>B liked it <b>315</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">346</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">31</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-315</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The portrait relies on a few opaque strokes for features and head shape, leaving the facial structure under-modeled and the edges noticeably sketchy.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>Confident brushwork and strong tonal contrast create an expressive, character-filled portrait with efficient application.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/9d7tzd1hoize1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/9d7tzd1hoize1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Lunar black and Venice</div>
+                <div class="mover-meta">
+                    <code>1khkvd8</code> · 329 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1khkvd8/lunar_black_and_venice/" target="_blank">reddit</a>
+                    · <em>B liked it <b>315</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">337</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">22</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-315</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The monochrome landscape has atmospheric texture, but its forms read as indistinct masses with limited focal hierarchy and weaker structural clarity than the others.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Strong monochromatic values and purposeful use of wet-on-wet technique create a compelling sense of light, shadow, and mystery.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/clbdhafypkff1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/clbdhafypkff1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Aquarell beginner</div>
+                <div class="mover-meta">
+                    <code>1mdwgsl</code> · 27 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1mdwgsl/aquarell_beginner/" target="_blank">reddit</a>
+                    · <em>A liked it <b>297</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">77</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">374</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+297</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The lighthouse has a clear dramatic idea and nice glow effects, but the forms are somewhat stiff and the staircase perspective and rock masses feel less assured.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Ambitious lighting attempt using metallic accents, but the execution suffers from muddy shadow tones and imprecise structural drawing.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://preview.redd.it/nestfbn93n9e1.png?width=1000&amp;format=png&amp;auto=webp&amp;s=10ae51bad2f47c7df3eec5feee3e20b255573724" target="_blank">
+                    <img class="mover-thumb" src="https://preview.redd.it/nestfbn93n9e1.png?width=1000&amp;format=png&amp;auto=webp&amp;s=10ae51bad2f47c7df3eec5feee3e20b255573724" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">I stopped following weekly watercolor tutorials after several years and started painting my own things. (birds. It&#x27;s all birds.) Here are a few of my favorites. </div>
+                <div class="mover-meta">
+                    <code>1hod120</code> · 540 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1hod120/i_stopped_following_weekly_watercolor_tutorials/" target="_blank">reddit</a>
+                    · <em>A liked it <b>287</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">25</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">312</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+287</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The bird is modeled with the cleanest value control and the branch creates a strong diagonal that supports the pose without cluttering the composition.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>The painting demonstrates skilled control of texture and value, though the composition feels slightly static.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/4jo0d2xujxdd1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/4jo0d2xujxdd1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Do you guys think I should go little bit more into realism? </div>
+                <div class="mover-meta">
+                    <code>1e8vhr9</code> · 1142 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1e8vhr9/do_you_guys_think_i_should_go_little_bit_more/" target="_blank">reddit</a>
+                    · <em>B liked it <b>272</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">287</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">15</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-272</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:53</div>Although energetic, the abstract seascape is the least resolved, with some muddy transitions and a composition that feels more accidental than intentionally structured.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Sophisticated mastery of wet-on-wet technique creates atmospheric depth and a dynamic, moody composition with vibrant color contrasts.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://preview.redd.it/15pcdtdvycqc1.jpg?width=1850&amp;format=pjpg&amp;auto=webp&amp;s=4cf47f18faba481a200a52025344f867a3be9f8f" target="_blank">
+                    <img class="mover-thumb" src="https://preview.redd.it/15pcdtdvycqc1.jpg?width=1850&amp;format=pjpg&amp;auto=webp&amp;s=4cf47f18faba481a200a52025344f867a3be9f8f" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Testing new watercolor palette</div>
+                <div class="mover-meta">
+                    <code>1bmxgmz</code> · 40 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1bmxgmz/testing_new_watercolor_palette/" target="_blank">reddit</a>
+                    · <em>B liked it <b>264</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">372</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">108</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-264</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The floral-and-face collage has energetic color and layered washes, but the facial features are only partially articulated and the composition reads as the least controlled.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>Displays an excellent, loose, and expressive integration of floral elements with portraiture, showcasing strong color harmony and confident brushwork.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/pc2ctn40pg8g1.png" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/pc2ctn40pg8g1.png" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">14/100 water color practice</div>
+                <div class="mover-meta">
+                    <code>1pruhdr</code> · 85 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1pruhdr/14100_water_color_practice/" target="_blank">reddit</a>
+                    · <em>A liked it <b>259</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">112</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">371</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+259</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The owl has energetic color and a lively background, but the broad brushwork and poster-like contrast flatten the form and weaken anatomical refinement.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>While the subject is clear, the execution suffers from heavy-handed application that lacks the typical transparency and nuance associated with high-level watercolor technique.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/v9w38mw6bh9g1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/v9w38mw6bh9g1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">asked friend for a shape, they said rhombus</div>
+                <div class="mover-meta">
+                    <code>1pvvu8h</code> · 55 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1pvvu8h/asked_friend_for_a_shape_they_said_rhombus/" target="_blank">reddit</a>
+                    · <em>B liked it <b>257</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">322</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">65</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-257</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The figure has strong contour control and convincing watercolor skin-and-cloth modeling, though some anatomy and edge transitions are awkward.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Strong character expression and intentional, confident line work effectively merge illustrative style with watercolor rendering.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/tw3lcsj6u2ff1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/tw3lcsj6u2ff1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Advice on what to do with the girl in the painting</div>
+                <div class="mover-meta">
+                    <code>1m99ec2</code> · 27 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1m99ec2/advice_on_what_to_do_with_the_girl_in_the_painting/" target="_blank">reddit</a>
+                    · <em>B liked it <b>256</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">393</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">137</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-256</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The architectural study has a pleasing pale palette and some stone texture, yet the drawing feels tentative with flattened forms and uneven perspective.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>The delicate, restrained color palette and purposeful use of negative space effectively depict crumbling architectural detail.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/7iqrhxufn16e1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/7iqrhxufn16e1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Pine Marten Archer, watercolor and ink </div>
+                <div class="mover-meta">
+                    <code>1hb501u</code> · 125 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1hb501u/pine_marten_archer_watercolor_and_ink/" target="_blank">reddit</a>
+                    · <em>A liked it <b>256</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">24</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">280</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+256</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The character illustration has strong control of fur texture and costume folds, with clean dark accents around the eyes and nose that anchor the focal point.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>This piece shows deliberate and tight linework combined with a vibrant color palette, though the overall treatment feels slightly more illustrative than painterly.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/0ic90vjh34pc1.png" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/0ic90vjh34pc1.png" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Fiona from the Chronicles of Amber, watercolors and color pencils</div>
+                <div class="mover-meta">
+                    <code>1bhtm7l</code> · 20 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1bhtm7l/fiona_from_the_chronicles_of_amber_watercolors/" target="_blank">reddit</a>
+                    · <em>A liked it <b>252</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">38</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">290</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+252</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The stained-glass scene has the strongest graphic design, with crisp leading lines and a controlled warm-cool palette that makes the central figure read clearly.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>Ambitious stained-glass motif with well-executed saturation in the mosaic background, though the central figure&#x27;s anatomy feels a bit stiff.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/r4hv1cw3oqve1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/r4hv1cw3oqve1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Fruits ninja 🥷</div>
+                <div class="mover-meta">
+                    <code>1k2qbgb</code> · 48 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1k2qbgb/fruits_ninja/" target="_blank">reddit</a>
+                    · <em>A liked it <b>251</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">68</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">319</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+251</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The fruit studies are well observed and varied in form, but the set reads more like exercises than a single resolved composition, with some repetitive highlight handling.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>A clear study in form and shadow, though the modeling of the individual fruits is somewhat uneven in terms of depth.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/tc5r1z9yjh5d1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/tc5r1z9yjh5d1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">This is the best watercolorpainting i have done so far, hope u like it</div>
+                <div class="mover-meta">
+                    <code>1dbmqpe</code> · 156 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1dbmqpe/this_is_the_best_watercolorpainting_i_have_done/" target="_blank">reddit</a>
+                    · <em>B liked it <b>247</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">293</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">46</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-247</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The architecture is handled with solid value grouping and a readable reflection, though the edges and perspective are less controlled than the top two.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>Solid architectural rendering with confident brushwork, though the dark contrasts feel slightly disconnected from the foreground wash.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/2ueduvk72tqd1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/2ueduvk72tqd1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">I hope you like it </div>
+                <div class="mover-meta">
+                    <code>1fokh25</code> · 101 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1fokh25/i_hope_you_like_it/" target="_blank">reddit</a>
+                    · <em>A liked it <b>245</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">36</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">281</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+245</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The owl has rich feather texture and convincing patterning, though the heavy dark tree trunk on the right competes a bit with the subject.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Intricate texture work on the feathers is impressive, though the flat, unrefined background wash diminishes the overall impact.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/5bywkfonidrf1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/5bywkfonidrf1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">First time using Payne’s Gray and thought a postcard value study would be a good way to try it out</div>
+                <div class="mover-meta">
+                    <code>1nqi8d1</code> · 106 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1nqi8d1/first_time_using_paynes_gray_and_thought_a/" target="_blank">reddit</a>
+                    · <em>B liked it <b>242</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">392</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">150</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-242</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>Strong value contrast and a restrained grayscale palette create a moody, well-centered image, though the small subject is simpler and less materially nuanced than A.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Strong value contrast and simple composition create an evocative, high-impact scene.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/gzz65psuqpsc1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/gzz65psuqpsc1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Coffee and Camomile, t0ffee-c0ffee, ink and watercolour, 2024</div>
+                <div class="mover-meta">
+                    <code>1bx6qco</code> · 59 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1bx6qco/coffee_and_camomile_t0ffeec0ffee_ink_and/" target="_blank">reddit</a>
+                    · <em>B liked it <b>232</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">380</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">148</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-232</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>Despite crisp linework, it reads more like an ink illustration with minimal watercolor presence, so it feels least fully realized as a watercolor piece.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>While the conceptual design is clever, the watercolor application remains quite flat and simplistic compared to the stronger illustrative line elements.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/8ipdfgrx87ve1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/8ipdfgrx87ve1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Street vendor live painting!</div>
+                <div class="mover-meta">
+                    <code>1k0kimj</code> · 235 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1k0kimj/street_vendor_live_painting/" target="_blank">reddit</a>
+                    · <em>B liked it <b>223</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">282</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">59</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-223</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The loose urban sketching shows appealing atmospheric washes and a lively observational feel, but the structure is less resolved and the linework stays sketchy compared with the top two.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>The confident, expressive line work combined with loose atmospheric washes demonstrates a masterful understanding of urban sketching and watercolor spontaneity.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/czft5x335m6d1.png" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/czft5x335m6d1.png" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Time Shared With You made by me</div>
+                <div class="mover-meta">
+                    <code>1dg313o</code> · 27 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1dg313o/time_shared_with_you_made_by_me/" target="_blank">reddit</a>
+                    · <em>A liked it <b>216</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">157</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">373</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+216</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The piece combines a clean central focal object with a successful galaxy wash background, but the box-like form feels a bit rigid and uniformly outlined.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>While the background wash is well-blended, the architectural rendering of the police box suffers from rigid, flat lines that lack the organic quality of watercolor.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/1doler050ovd1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/1doler050ovd1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Still a beginner but I&#x27;m actually happy with this one</div>
+                <div class="mover-meta">
+                    <code>1g73mhm</code> · 78 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1g73mhm/still_a_beginner_but_im_actually_happy_with_this/" target="_blank">reddit</a>
+                    · <em>A liked it <b>215</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">165</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">380</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+215</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The squirrel painting shows lively patterning and confident color layering, but the forms are a bit flattened by repeated marks and the background handling is less refined.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>The background wash is muddy and uneven, and the overall composition lacks sufficient depth and structural definition.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/ui4ko2cdo26d1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/ui4ko2cdo26d1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">I can never decide if a piece is really finished…</div>
+                <div class="mover-meta">
+                    <code>1ddyl30</code> · 212 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1ddyl30/i_can_never_decide_if_a_piece_is_really_finished/" target="_blank">reddit</a>
+                    · <em>A liked it <b>214</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">131</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">345</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+214</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The sunset sky is beautifully layered in transparent bands, but the simplified cactus forms and repeated verticals make the composition feel more decorative than resolved.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>The emotive sunset palette is strong, although the composition is somewhat fragmented by the repetitive cactus placement.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/ays2l1h958hc1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/ays2l1h958hc1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">It’s the northern lights, but this time we bring the DRAMA!</div>
+                <div class="mover-meta">
+                    <code>1alczmg</code> · 53 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1alczmg/its_the_northern_lights_but_this_time_we_bring/" target="_blank">reddit</a>
+                    · <em>A liked it <b>213</b> spots more than B</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">86</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">299</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta neg'>+213</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The nebula effect is energetic and colorful, yet the overall image leans on repeated spatter and broad gradients rather than a more developed compositional structure.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>Expert use of granulation and lift-off techniques creates a vibrant and atmospheric celestial effect.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://preview.redd.it/fjdllsyyec3f1.jpg?width=1769&amp;format=pjpg&amp;auto=webp&amp;s=5be1c156da4a7f0813f4645a5304098fed527269" target="_blank">
+                    <img class="mover-thumb" src="https://preview.redd.it/fjdllsyyec3f1.jpg?width=1769&amp;format=pjpg&amp;auto=webp&amp;s=5be1c156da4a7f0813f4645a5304098fed527269" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Two small watercolor abstractions on the theme of light in nature</div>
+                <div class="mover-meta">
+                    <code>1kwq63e</code> · 579 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1kwq63e/two_small_watercolor_abstractions_on_the_theme_of/" target="_blank">reddit</a>
+                    · <em>B liked it <b>206</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">295</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">89</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-206</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The tree study has appealing wet-in-wet color transitions and dramatic contrast, but the canopy and trunk merge into a somewhat unresolved mass.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:36:50</div>The treatment of the tree is expressive with good texture, though the transition toward the ground plane lacks cohesive detail and light unity.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://i.redd.it/zds57ioem3vf1.jpeg" target="_blank">
+                    <img class="mover-thumb" src="https://i.redd.it/zds57ioem3vf1.jpeg" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Old door</div>
+                <div class="mover-meta">
+                    <code>1o6j73r</code> · 829 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1o6j73r/old_door/" target="_blank">reddit</a>
+                    · <em>B liked it <b>205</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">225</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">20</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-205</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:54</div>The arched doorway is handled with the strongest value structure and perspective, with crisp dark interior contrast against the pale wall and convincing water reflections below.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:09</div>The subtle manipulation of wash transparency and the effective use of negative space in the reflection are very well-executed.</div>
+            </div>
+        </div>
+        
+        <div class="mover-grid">
+            <div>
+                <a href="https://preview.redd.it/g2fbj9g48hvd1.jpg?width=1440&amp;format=pjpg&amp;auto=webp&amp;s=a61ba360df4e1a0290a493598c9ef4c81a7c5d3e" target="_blank">
+                    <img class="mover-thumb" src="https://preview.redd.it/g2fbj9g48hvd1.jpg?width=1440&amp;format=pjpg&amp;auto=webp&amp;s=a61ba360df4e1a0290a493598c9ef4c81a7c5d3e" alt="" loading="lazy">
+                </a>
+            </div>
+            <div>
+                <div class="mover-title">Watercolor pencils, inktober and &#x27;Roam&#x27; prompt </div>
+                <div class="mover-meta">
+                    <code>1g6dco3</code> · 24 upvotes ·
+                    <a href="https://reddit.com/r/Watercolor/comments/1g6dco3/watercolor_pencils_inktober_and_roam_prompt/" target="_blank">reddit</a>
+                    · <em>B liked it <b>205</b> spots more than A</em>
+                </div>
+                <div class="rank-row">
+                    <div class="rank-box A"><div class="label">A rank</div>
+                        <div class="val">366</div></div>
+                    <div class="rank-box B"><div class="label">B rank</div>
+                        <div class="val">161</div></div>
+                    <div class="rank-box"><div class="label">Δ</div>
+                        <div class="val"><span class='delta pos'>-205</span></div></div>
+                    <div style="font-size:11px;color:#888;">
+                        of 411 eligible pieces
+                    </div>
+                </div>
+                <div class="rationale-row A"><div class="label">A · gpt-5.4-mini · 2026-05-24T20:40:53</div>The figure has strong tonal contrast and a clear focal path, yet the background washes are rough and the anatomy/ground plane feel more provisional than the pieces above.</div>
+                <div class="rationale-row B"><div class="label">B · google/gemini-3.1-flash-lite · 2026-05-25T00:38:10</div>Skilled manipulation of grayscale washes to create depth and atmosphere, though the composition is somewhat static.</div>
+            </div>
+        </div>
+        
+
+<h2>Excluded by google/gemini-3.1-flash-lite but not gpt-5.4-mini</h2>
+<p style="font-size:13px;color:#666;">26 pieces.
+These triggered ≥2 not-art flags from google/gemini-3.1-flash-lite but gpt-5.4-mini kept them in the pool.
+Sorted by upvotes (highest first).</p>
+<table class="exclusion-list">
+        <thead><tr><th></th><th>id</th><th>upvotes</th><th>title</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/qkik1qauo9cf1.jpeg" alt=""></td>
+                <td><code>1lxaj41</code></td>
+                <td>1616</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1lxaj41/painting_loose_florals_gives_me_so_much_joy/" target="_blank">
+                    Painting loose florals gives me so much joy</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/q9sa5oezvaoc1.jpeg" alt=""></td>
+                <td><code>1bel09i</code></td>
+                <td>965</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1bel09i/my_beagle_a_walking_vacuum/" target="_blank">
+                    My beagle, a walking vacuum...</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/ok44h712jp2f1.jpeg" alt=""></td>
+                <td><code>1ku8idw</code></td>
+                <td>734</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1ku8idw/i_made_postcards_with_my_paintings/" target="_blank">
+                    I made postcards with my paintings</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/o59i75ejhcmc1.jpeg" alt=""></td>
+                <td><code>1b6fcnr</code></td>
+                <td>668</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1b6fcnr/i_love_painting_wrinkles/" target="_blank">
+                    I love painting wrinkles</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/x57w7d29sooc1.jpeg" alt=""></td>
+                <td><code>1bg4jbh</code></td>
+                <td>471</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1bg4jbh/advice_needed_how_can_i_improve/" target="_blank">
+                    advice needed!! how can I improve?</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/ais1fdujt09e1.png" alt=""></td>
+                <td><code>1hm3omx</code></td>
+                <td>429</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1hm3omx/scared_to_commit/" target="_blank">
+                    Scared to commit</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/gfwg3jkq5dzd1.jpeg" alt=""></td>
+                <td><code>1glc2gy</code></td>
+                <td>374</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1glc2gy/ive_been_practicing_a_more_loose_style_i_think_i/" target="_blank">
+                    I&#x27;ve been practicing a more loose style. I think I like it!</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/bjoxra5rtygc1.jpg?width=1440&amp;format=pjpg&amp;auto=webp&amp;s=ea1208e0b348811bfcb2f80563a355cdcca81e5c" alt=""></td>
+                <td><code>1ak9iwl</code></td>
+                <td>333</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1ak9iwl/a_sketch_i_made_for_a_larger_painting_of_some/" target="_blank">
+                    A sketch I made for a larger painting of some folks at the park</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/kmul5t4igznf1.jpeg" alt=""></td>
+                <td><code>1nbvhor</code></td>
+                <td>276</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1nbvhor/my_todays_work/" target="_blank">
+                    My today&#x27;s work</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/t3n2pqoqku3e1.jpeg" alt=""></td>
+                <td><code>1h2mgh9</code></td>
+                <td>128</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1h2mgh9/watercolor_portrait/" target="_blank">
+                    Watercolor portrait</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/6roked9v3gqe1.jpeg" alt=""></td>
+                <td><code>1jhzvg4</code></td>
+                <td>114</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1jhzvg4/mixed_media_attempt/" target="_blank">
+                    Mixed media attempt</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://external-preview.redd.it/ejdiZHE0aHJpYmJmMXLbeJgATuev8D0xHEe8QTiFzc0bNaC9CJYl03r4_vLu.png?format=pjpg&amp;auto=webp&amp;s=71074a7408a720790c9bc130c26ecd7f1ca04913" alt=""></td>
+                <td><code>1ltbzb0</code></td>
+                <td>102</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1ltbzb0/timelapse_of_my_most_recent_8x10_watercolor/" target="_blank">
+                    Timelapse of my most recent 8x10 watercolor painting! Enjoy!</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/7molvupux49g1.jpeg" alt=""></td>
+                <td><code>1pul1hk</code></td>
+                <td>79</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1pul1hk/im_done_painting_for_the_year_here_are_a_few_of/" target="_blank">
+                    I’m done painting for the year. Here are a few of my favorites watercolors from </a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://external-preview.redd.it/NmdwZTh4d215dm1lMVu9ynyB_M_OhJXHyjgMP3IwPrhWQS244HM7bUf3UAWZ.png?format=pjpg&amp;auto=webp&amp;s=ad166758eec90dc37b4a32beb1a0f84b350b6022" alt=""></td>
+                <td><code>1j451cm</code></td>
+                <td>72</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1j451cm/what_do_you_like_to_use_for_highlights/" target="_blank">
+                    What do you like to use for highlights?</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/bh1rtb0helwc1.jpeg" alt=""></td>
+                <td><code>1ccnfhb</code></td>
+                <td>60</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1ccnfhb/a_little_wonky_but_am_happy_with_it/" target="_blank">
+                    A little wonky but am happy with it </a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/j0mtv73lqr2d1.jpeg" alt=""></td>
+                <td><code>1d10sya</code></td>
+                <td>51</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1d10sya/chamomiles/" target="_blank">
+                    Chamomiles</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/vmcxumiiafff1.jpeg" alt=""></td>
+                <td><code>1mamyj0</code></td>
+                <td>51</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1mamyj0/playing_with_colors_in_the_circles_remind_me/" target="_blank">
+                    Playing with colors in the circles. Remind me small planets at The little Prince</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/rqbdzqxhkesf1.jpeg" alt=""></td>
+                <td><code>1nuv6d7</code></td>
+                <td>49</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1nuv6d7/latest_beep_boop/" target="_blank">
+                    Latest Beep Boop</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/cau44iju963d1.jpg?width=1080&amp;format=pjpg&amp;auto=webp&amp;s=71f4c72f9c394ffa36d6518a60c5e2f0d5e09858" alt=""></td>
+                <td><code>1d2jyvj</code></td>
+                <td>41</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1d2jyvj/i_begun_the_portrait_of_my_grandmas_friend/" target="_blank">
+                    I begun the portrait of my grandma&#x27;s friend, Zamaliev Igor, watercolor on paper,</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/hhd4q7i5v9rf1.jpeg" alt=""></td>
+                <td><code>1nq1c9p</code></td>
+                <td>38</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1nq1c9p/menu_food_art_i_did/" target="_blank">
+                    Menu food art I did</a></td>
+            </tr></tbody></table><p style='color:#999;font-size:12px;'>… and 6 more</p>
+
+<h2>Excluded by gpt-5.4-mini but not google/gemini-3.1-flash-lite</h2>
+<p style="font-size:13px;color:#666;">11 pieces.</p>
+<table class="exclusion-list">
+        <thead><tr><th></th><th>id</th><th>upvotes</th><th>title</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/sc6avyy94uae1.jpeg" alt=""></td>
+                <td><code>1hsvhx4</code></td>
+                <td>648</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1hsvhx4/teaching_myself_how_to_watercolor_this_year_made/" target="_blank">
+                    Teaching myself how to watercolor this year, made this little guy for a cake top</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/xf8qy9v34r4e1.jpg?width=2800&amp;format=pjpg&amp;auto=webp&amp;s=b054d27deb5b5e374ace495b616859abb77fb004" alt=""></td>
+                <td><code>1h66nvg</code></td>
+                <td>467</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1h66nvg/ive_been_practicing_with_watercolor_lately_heres/" target="_blank">
+                    I&#x27;ve been practicing with watercolor lately. Here&#x27;s 20 examples of some goofy ch</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/q24grglxuyud1.jpeg" alt=""></td>
+                <td><code>1g4f8g5</code></td>
+                <td>378</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1g4f8g5/how_would_you_approach_this/" target="_blank">
+                    How would you approach this?</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/czm8p0kjncse1.jpeg" alt=""></td>
+                <td><code>1jpgch0</code></td>
+                <td>137</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1jpgch0/water_tutorial/" target="_blank">
+                    water tutorial</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/pia3rtlntnje1.jpg?width=1369&amp;format=pjpg&amp;auto=webp&amp;s=ef907186cbbca4f9e243540247118cdee6592c12" alt=""></td>
+                <td><code>1irf84t</code></td>
+                <td>129</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1irf84t/teenytiny_watercolors/" target="_blank">
+                    Teeny-tiny watercolors</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/oz3ffmxtbr3g1.jpeg" alt=""></td>
+                <td><code>1p7wqdt</code></td>
+                <td>72</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1p7wqdt/proud_of_my_progress_over_the_past_year/" target="_blank">
+                    Proud of my progress over the past year</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/mlpc92hy55id1.jpeg" alt=""></td>
+                <td><code>1eq22x3</code></td>
+                <td>71</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1eq22x3/watercolor/" target="_blank">
+                    Watercolor🪼</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/k7xanf0515gf1.jpeg" alt=""></td>
+                <td><code>1mds7wj</code></td>
+                <td>56</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1mds7wj/watercolor_bookmarkswith_design_motifs/" target="_blank">
+                    Watercolor bookmarks…with design motifs</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/wytpundgce2d1.jpg?width=4032&amp;format=pjpg&amp;auto=webp&amp;s=d09d7cf0a5e30fb1177e9a5a99c26f1a2b500669" alt=""></td>
+                <td><code>1czo2u3</code></td>
+                <td>50</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1czo2u3/the_fountain_in_bryant_park_nyc_the_white_tents/" target="_blank">
+                    The fountain in Bryant Park, NYC. The white tents are part of the Maker’s Market</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://preview.redd.it/i4dbdvmxyp7f1.jpg?width=4032&amp;format=pjpg&amp;auto=webp&amp;s=85876b1bcedae117a268b6a630e4a2f023ab6424" alt=""></td>
+                <td><code>1lemwj7</code></td>
+                <td>28</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1lemwj7/pen_suggestions/" target="_blank">
+                    Pen suggestions?☺️</a></td>
+            </tr>
+            <tr>
+                <td><img class="mini" src="https://i.redd.it/9de2sldd0wpf1.jpeg" alt=""></td>
+                <td><code>1nk33ja</code></td>
+                <td>23</td>
+                <td><a href="https://reddit.com/r/Watercolor/comments/1nk33ja/a_breezy_ride/" target="_blank">
+                    A breezy ride</a></td>
+            </tr></tbody></table>
+
+</body></html>

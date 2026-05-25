@@ -25,6 +25,7 @@ from .config import (
     GROUP_SIZE,
     LLM_MODEL,
     RANKING_PASSES,
+    RANKING_RANDOM_PASSES,
     SUBREDDIT,
 )
 from .elo import apply_group_ranking
@@ -95,7 +96,8 @@ def _run_group(group: list, urls: dict, model: str) -> dict | None:
     }
 
 
-def run(subreddit: str, passes: int, model: str, workers: int) -> None:
+def run(subreddit: str, passes: int, model: str, workers: int,
+        random_passes: int) -> None:
     with db.connect() as conn:
         ratings, urls = _load_eligible(conn, subreddit)
 
@@ -105,8 +107,11 @@ def run(subreddit: str, passes: int, model: str, workers: int) -> None:
 
     n = len(ratings)
     total_groups = passes * (n // GROUP_SIZE)
+    bucketed_passes = passes - random_passes
     print(f"Ranking {n} pieces in r/{subreddit} over {passes} passes "
           f"of {GROUP_SIZE}-way groups ({workers} workers).")
+    print(f"  Phase 1: {random_passes} random passes (wide-range)")
+    print(f"  Phase 2: {bucketed_passes} rating-bucketed passes (focused on close-rated)")
     print(f"Approx LLM calls: {total_groups}\n")
 
     db_lock = threading.Lock()
@@ -117,7 +122,7 @@ def run(subreddit: str, passes: int, model: str, workers: int) -> None:
         with db.connect() as conn:
             ratings, urls = _load_eligible(conn, subreddit)
 
-        by_rating = pass_idx >= max(2, passes // 3)
+        by_rating = pass_idx >= random_passes
         piece_list = [(pid, ratings[pid]) for pid in ratings]
         groups = _build_groups(piece_list, GROUP_SIZE, by_rating=by_rating)
         mode = "rating-bucketed" if by_rating else "random"
@@ -202,11 +207,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subreddit", default=SUBREDDIT)
     parser.add_argument("--passes", type=int, default=RANKING_PASSES)
+    parser.add_argument("--random-passes", type=int, default=RANKING_RANDOM_PASSES,
+                        help="First N passes use random grouping (wide-range); "
+                             "remaining passes use rating-bucketed (focused)")
     parser.add_argument("--model", default=LLM_MODEL)
     parser.add_argument("--workers", type=int, default=5,
                         help="Concurrent LLM calls per pass")
     args = parser.parse_args()
-    run(args.subreddit, args.passes, args.model, args.workers)
+    run(args.subreddit, args.passes, args.model, args.workers, args.random_passes)
 
 
 if __name__ == "__main__":

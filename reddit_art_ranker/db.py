@@ -44,6 +44,30 @@ CREATE TABLE IF NOT EXISTS comparisons (
     per_piece_rationales_json   TEXT,
     candidate_id                TEXT
 );
+
+-- Snapshots of the ratings table after a full rank pass, so multiple model
+-- runs can be compared without one overwriting the other in the live table.
+CREATE TABLE IF NOT EXISTS model_runs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    model           TEXT NOT NULL,
+    label           TEXT,
+    subreddit       TEXT NOT NULL,
+    snapshot_at     TEXT NOT NULL,
+    n_pieces        INTEGER NOT NULL,
+    n_excluded      INTEGER NOT NULL,
+    note            TEXT
+);
+
+CREATE TABLE IF NOT EXISTS model_run_ratings (
+    run_id          INTEGER NOT NULL,
+    reddit_id       TEXT NOT NULL,
+    elo             REAL NOT NULL,
+    n_comparisons   INTEGER NOT NULL,
+    n_not_art_flags INTEGER NOT NULL,
+    PRIMARY KEY (run_id, reddit_id),
+    FOREIGN KEY (run_id) REFERENCES model_runs(id) ON DELETE CASCADE,
+    FOREIGN KEY (reddit_id) REFERENCES pieces(reddit_id)
+);
 """
 
 # Idempotent migrations for DBs created before newer columns existed.
@@ -128,6 +152,62 @@ def get_ratings(conn, subreddit: str):
         """,
         (subreddit,),
     ).fetchall()
+
+
+def snapshot_ratings(conn, model: str, subreddit: str,
+                     label: str | None = None, note: str | None = None) -> int:
+    """Copy the current ratings table into model_run_ratings under a new
+    model_runs row. Returns the run_id."""
+    rows = conn.execute(
+        """
+        SELECT r.reddit_id, r.elo, r.n_comparisons, r.n_not_art_flags
+        FROM ratings r JOIN pieces p ON p.reddit_id = r.reddit_id
+        WHERE p.subreddit = ? AND p.is_candidate = 0
+        """,
+        (subreddit,),
+    ).fetchall()
+    n_excl = sum(1 for r in rows if int(r["n_not_art_flags"]) >= 2)
+    cur = conn.execute(
+        """
+        INSERT INTO model_runs (model, label, subreddit, snapshot_at,
+                                n_pieces, n_excluded, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (model, label, subreddit, _now(), len(rows), n_excl, note),
+    )
+    run_id = cur.lastrowid
+    conn.executemany(
+        """
+        INSERT INTO model_run_ratings (run_id, reddit_id, elo,
+                                       n_comparisons, n_not_art_flags)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        [(run_id, r["reddit_id"], float(r["elo"]),
+          int(r["n_comparisons"]), int(r["n_not_art_flags"])) for r in rows],
+    )
+    return run_id
+
+
+def reset_ratings(conn, subreddit: str) -> int:
+    """Reset ELO + comparison counts + flags for all non-candidate pieces in
+    a subreddit. Pieces and historical comparisons rows remain intact."""
+    rows = conn.execute(
+        """
+        SELECT r.reddit_id FROM ratings r JOIN pieces p ON p.reddit_id = r.reddit_id
+        WHERE p.subreddit = ? AND p.is_candidate = 0
+        """,
+        (subreddit,),
+    ).fetchall()
+    ids = [r["reddit_id"] for r in rows]
+    conn.executemany(
+        """
+        UPDATE ratings
+        SET elo = ?, n_comparisons = 0, n_not_art_flags = 0, last_updated = ?
+        WHERE reddit_id = ?
+        """,
+        [(ELO_INITIAL, _now(), pid) for pid in ids],
+    )
+    return len(ids)
 
 
 def increment_not_art_flag(conn, reddit_id: str) -> int:
