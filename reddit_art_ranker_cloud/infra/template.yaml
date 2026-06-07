@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  reddit_art_ranker_cloud — serverless consumer app for ranking a submitted
+  art piece against a published pool. Idle cost ~$0 (DynamoDB on-demand +
+  Lambda + HTTP API all scale to zero between requests).
+
+Parameters:
+  OpenRouterApiKey:
+    Type: String
+    NoEcho: true
+    Description: OpenRouter API key for the LLM jury. For production, prefer a
+      Secrets Manager reference over a plaintext parameter.
+  LlmModel:
+    Type: String
+    Default: openai/gpt-5.4-mini
+  CorsOrigin:
+    Type: String
+    Default: "*"
+    Description: Allowed browser origin (set to your frontend URL in production).
+
+Globals:
+  Function:
+    Runtime: python3.12
+    MemorySize: 512
+    Architectures: [arm64]
+    Environment:
+      Variables:
+        DDB_TABLE: !Ref RankerTable
+        S3_BUCKET: !Ref AssetsBucket
+        LLM_MODEL: !Ref LlmModel
+        OPENROUTER_API_KEY: !Ref OpenRouterApiKey
+
+Resources:
+  # ── Data ──────────────────────────────────────────────────────────────────
+  RankerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST          # scales to $0 when idle
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      TimeToLiveSpecification:
+        AttributeName: ttl                   # reaps old submission/job records
+        Enabled: true
+
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRawUploads
+            Status: Enabled
+            Prefix: uploads/                 # candidate uploads are transient
+            ExpirationInDays: 7
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [PUT, GET]
+            AllowedOrigins: [!Ref CorsOrigin]
+            AllowedHeaders: ["*"]
+            MaxAge: 3000
+
+  # ── Compute ───────────────────────────────────────────────────────────────
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../                            # module root: backend/ + shared/
+      Handler: backend.handlers.api_handler
+      Timeout: 29                             # under the HTTP API 30s ceiling
+      Environment:
+        Variables:
+          WORKER_FUNCTION: !Sub "${AWS::StackName}-worker"
+          CORS_ORIGIN: !Ref CorsOrigin
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref RankerTable }
+        - S3CrudPolicy: { BucketName: !Ref AssetsBucket }
+        - LambdaInvokePolicy: { FunctionName: !Sub "${AWS::StackName}-worker" }
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  WorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-worker"
+      CodeUri: ../
+      Handler: backend.handlers.worker_handler
+      Timeout: 600                            # ~8 LLM rounds + feedback
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref RankerTable }
+        - S3CrudPolicy: { BucketName: !Ref AssetsBucket }
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: [!Ref CorsOrigin]
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: [Content-Type]
+
+Outputs:
+  ApiUrl:
+    Description: Base URL for the consumer API (set this in the frontend).
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  BucketName:
+    Value: !Ref AssetsBucket
+  TableName:
+    Value: !Ref RankerTable

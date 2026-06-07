@@ -1,0 +1,4 @@
+# Lambda deployment dependencies (installed into the function package by `sam build`).
+# boto3 is provided by the Lambda runtime, but pinning it keeps local + cloud aligned.
+openai>=1.40
+boto3>=1.34

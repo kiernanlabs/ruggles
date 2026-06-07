@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How good is your art?</title>
+<style>
+  :root { --accent:#0366d6; }
+  body { font-family:-apple-system,Segoe UI,sans-serif; max-width:760px;
+         margin:32px auto; padding:0 20px; color:#222; line-height:1.5; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  .sub { color:#888; margin:0 0 24px; }
+  .card { border:1px solid #eee; border-radius:8px; padding:20px; margin-bottom:20px; }
+  label { display:block; font-size:13px; font-weight:600; margin:12px 0 4px; }
+  select,input[type=text] { width:100%; padding:10px; border:1px solid #ddd;
+         border-radius:6px; font-size:15px; box-sizing:border-box; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:6px;
+         padding:12px 20px; font-size:15px; font-weight:600; cursor:pointer; margin-top:16px; }
+  button:disabled { opacity:.5; cursor:default; }
+  #preview { max-width:200px; max-height:200px; border-radius:6px; margin-top:10px; display:none; }
+  .big-number { font-size:72px; font-weight:700; line-height:1; color:var(--accent);
+         font-variant-numeric:tabular-nums; }
+  .big-number sup { font-size:26px; vertical-align:top; }
+  .bar { height:28px; background:#f0f0f0; border-radius:14px; position:relative; margin:16px 0 6px; }
+  .bar .grad { position:absolute; inset:0; border-radius:14px; opacity:.18;
+         background:linear-gradient(90deg,#c0392b,#f39c12,#f1c40f,#2ecc71); }
+  .bar .mark { position:absolute; top:-6px; bottom:-6px; width:6px; border-radius:3px;
+         background:#222; }
+  .feedback { background:#f6f8fa; border-left:4px solid var(--accent); border-radius:4px;
+         padding:16px 20px; margin:18px 0; }
+  .tier h3 { margin:24px 0 8px; font-size:16px; }
+  .anchor { display:flex; gap:12px; align-items:flex-start; border:1px solid #eee;
+         border-radius:6px; padding:10px; margin-bottom:10px; }
+  .anchor img { width:80px; height:80px; object-fit:cover; border-radius:4px; }
+  .anchor .pct { font-size:12px; color:#666; }
+  .anchor .rat { font-size:13px; color:#555; font-style:italic; }
+  .status { color:#666; }
+  .hidden { display:none; }
+  .err { color:#c0392b; }
+</style>
+</head>
+<body>
+<h1>How good is your art?</h1>
+<p class="sub">Drop in a piece and an LLM jury ranks it against a pool of real submissions.</p>
+
+<!-- ── Submit form ── -->
+<div class="card" id="form-card">
+  <label for="pool">Pool</label>
+  <select id="pool"></select>
+  <label for="title">Title (optional)</label>
+  <input type="text" id="title" placeholder="My watercolor">
+  <label for="file">Your image</label>
+  <input type="file" id="file" accept="image/jpeg,image/png,image/webp">
+  <img id="preview" alt="">
+  <button id="go" disabled>Rank my art</button>
+  <p id="form-msg" class="status"></p>
+</div>
+
+<!-- ── Progress ── -->
+<div class="card hidden" id="progress-card">
+  <p class="status" id="progress-msg">Submitting…</p>
+</div>
+
+<!-- ── Result ── -->
+<div class="hidden" id="result-card"></div>
+
+<script>
+// ⚙️  Set this to the ApiUrl output from `sam deploy`.
+const API_URL = window.API_URL || "REPLACE_WITH_API_URL";
+
+const $ = (id) => document.getElementById(id);
+let selectedFile = null;
+
+async function loadPools() {
+  try {
+    const r = await fetch(`${API_URL}/pools`);
+    const { pools } = await r.json();
+    const sel = $("pool");
+    sel.innerHTML = "";
+    pools.filter(p => p.ready).forEach(p => {
+      const o = document.createElement("option");
+      o.value = p.id;
+      o.textContent = `${p.label} (${p.n_pieces} pieces)`;
+      sel.appendChild(o);
+    });
+    if (!sel.options.length) $("form-msg").textContent = "No pools published yet.";
+  } catch (e) {
+    $("form-msg").innerHTML = `<span class="err">Could not load pools — is API_URL set?</span>`;
+  }
+}
+
+$("file").addEventListener("change", (e) => {
+  selectedFile = e.target.files[0] || null;
+  const img = $("preview");
+  if (selectedFile) {
+    img.src = URL.createObjectURL(selectedFile);
+    img.style.display = "block";
+  }
+  $("go").disabled = !selectedFile;
+});
+
+$("go").addEventListener("click", submit);
+
+async function submit() {
+  $("go").disabled = true;
+  $("form-card").classList.add("hidden");
+  $("progress-card").classList.remove("hidden");
+  const setMsg = (m) => $("progress-msg").textContent = m;
+
+  try {
+    // 1. presigned upload
+    setMsg("Uploading your image…");
+    const up = await (await fetch(`${API_URL}/uploads`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content_type: selectedFile.type }),
+    })).json();
+
+    // 2. PUT the file straight to S3
+    await fetch(up.upload_url, {
+      method: "PUT", headers: { "Content-Type": selectedFile.type }, body: selectedFile,
+    });
+
+    // 3. create the submission (kicks off the async worker)
+    const sub = await (await fetch(`${API_URL}/submissions`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pool: $("pool").value, image_key: up.image_key, title: $("title").value,
+      }),
+    })).json();
+
+    // 4. poll
+    await poll(sub.job_id, setMsg);
+  } catch (e) {
+    setMsg("");
+    $("progress-card").innerHTML = `<p class="err">Something went wrong: ${e}</p>`;
+  }
+}
+
+async function poll(jobId, setMsg) {
+  for (let i = 0; i < 240; i++) {
+    const job = await (await fetch(`${API_URL}/submissions/${jobId}`)).json();
+    if (job.status === "running" && job.progress?.round) {
+      setMsg(`Judging… round ${job.progress.round}/${job.progress.total} `
+           + `(currently ~${job.progress.percentile}th percentile)`);
+    } else if (job.status === "queued") {
+      setMsg("Warming up the jury…");
+    } else if (job.status === "done") {
+      return render(job.result);
+    } else if (job.status === "error") {
+      throw new Error(job.error || "worker error");
+    }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  throw new Error("timed out waiting for result");
+}
+
+function render(res) {
+  $("progress-card").classList.add("hidden");
+  const card = $("result-card");
+  card.classList.remove("hidden");
+  const tierHtml = (label, items) => !items?.length ? "" : `
+    <div class="tier"><h3>${label}</h3>${items.map(a => `
+      <div class="anchor">
+        <img src="${a.image_url}" alt="">
+        <div>
+          <div class="pct">${a.percentile}th percentile · vs your ${res.percentile}th</div>
+          <div class="rat">"${a.rationale || ""}"</div>
+        </div>
+      </div>`).join("")}</div>`;
+
+  card.innerHTML = `
+    <div class="card">
+      <img src="${res.image_url}" style="max-width:240px;border-radius:6px;float:right;margin-left:16px;">
+      <div style="font-size:18px;color:#444">${res.headline.headline}</div>
+      <div class="big-number">${res.percentile}<sup>th</sup></div>
+      <div style="color:#666">percentile in ${res.pool_label} · rank ${res.rank}/${res.of}</div>
+      <div class="bar"><div class="grad"></div>
+        <div class="mark" style="left:calc(${res.percentile}% - 3px)"></div></div>
+      <div style="font-size:11px;color:#999">${res.headline.subline}</div>
+      ${res.feedback ? `<div class="feedback"><b>What the jury said:</b><br>${res.feedback}</div>` : ""}
+    </div>
+    ${tierHtml("Much better than yours", res.tiers.much_better)}
+    ${tierHtml("About the same", res.tiers.similar)}
+    ${tierHtml("Weaker than yours", res.tiers.much_worse)}
+  `;
+}
+
+loadPools();
+</script>
+</body>
+</html>
