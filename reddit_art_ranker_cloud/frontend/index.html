@@ -3,189 +3,274 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How good is your art?</title>
-<style>
-  :root { --accent:#0366d6; }
-  body { font-family:-apple-system,Segoe UI,sans-serif; max-width:760px;
-         margin:32px auto; padding:0 20px; color:#222; line-height:1.5; }
-  h1 { font-size:26px; margin:0 0 4px; }
-  .sub { color:#888; margin:0 0 24px; }
-  .card { border:1px solid #eee; border-radius:8px; padding:20px; margin-bottom:20px; }
-  label { display:block; font-size:13px; font-weight:600; margin:12px 0 4px; }
-  select,input[type=text] { width:100%; padding:10px; border:1px solid #ddd;
-         border-radius:6px; font-size:15px; box-sizing:border-box; }
-  button { background:var(--accent); color:#fff; border:0; border-radius:6px;
-         padding:12px 20px; font-size:15px; font-weight:600; cursor:pointer; margin-top:16px; }
-  button:disabled { opacity:.5; cursor:default; }
-  #preview { max-width:200px; max-height:200px; border-radius:6px; margin-top:10px; display:none; }
-  .big-number { font-size:72px; font-weight:700; line-height:1; color:var(--accent);
-         font-variant-numeric:tabular-nums; }
-  .big-number sup { font-size:26px; vertical-align:top; }
-  .bar { height:28px; background:#f0f0f0; border-radius:14px; position:relative; margin:16px 0 6px; }
-  .bar .grad { position:absolute; inset:0; border-radius:14px; opacity:.18;
-         background:linear-gradient(90deg,#c0392b,#f39c12,#f1c40f,#2ecc71); }
-  .bar .mark { position:absolute; top:-6px; bottom:-6px; width:6px; border-radius:3px;
-         background:#222; }
-  .feedback { background:#f6f8fa; border-left:4px solid var(--accent); border-radius:4px;
-         padding:16px 20px; margin:18px 0; }
-  .tier h3 { margin:24px 0 8px; font-size:16px; }
-  .anchor { display:flex; gap:12px; align-items:flex-start; border:1px solid #eee;
-         border-radius:6px; padding:10px; margin-bottom:10px; }
-  .anchor img { width:80px; height:80px; object-fit:cover; border-radius:4px; }
-  .anchor .pct { font-size:12px; color:#666; }
-  .anchor .rat { font-size:13px; color:#555; font-style:italic; }
-  .status { color:#666; }
-  .hidden { display:none; }
-  .err { color:#c0392b; }
-</style>
+<title>Mini Art Salon · Get a sense where your latest art stacks up</title>
+<meta name="description" content="Drop in a drawing and a jury will estimate where it sits among ~1,000 pieces from artists all over their learning journey.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;680&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>How good is your art?</h1>
-<p class="sub">Drop in a piece and an LLM jury ranks it against a pool of real submissions.</p>
+<div class="wrap narrow">
 
-<!-- ── Submit form ── -->
-<div class="card" id="form-card">
-  <label for="pool">Pool</label>
-  <select id="pool"></select>
-  <label for="title">Title (optional)</label>
-  <input type="text" id="title" placeholder="My watercolor">
-  <label for="file">Your image</label>
-  <input type="file" id="file" accept="image/jpeg,image/png,image/webp">
-  <img id="preview" alt="">
-  <button id="go" disabled>Rank my art</button>
-  <p id="form-msg" class="status"></p>
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="dot"></span> Mini Art Salon</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Rank yours</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <span class="pill"><span class="blink"></span> ~1,000 pieces in the mini salon today</span>
+    <h1>Where does your latest art land?</h1>
+    <p class="lede">Drop in a drawing and a jury will estimate where it sits among ~1,000 pieces from artists all over their learning journey.</p>
+  </header>
+
+  <!-- ── Submit ── -->
+  <div class="panel" id="form-card">
+    <span class="label">Your art</span>
+    <label class="drop" id="drop" for="file">
+      <input type="file" id="file" accept="image/jpeg,image/png,image/webp" hidden>
+      <img id="preview" alt="">
+      <div id="drop-text">
+        <div class="ico">🎨</div>
+        <div class="big">Drop a drawing here</div>
+        <div class="small">or click to browse · JPG, PNG, or WebP</div>
+      </div>
+    </label>
+    <button class="btn" id="go" disabled>Pop it in the salon</button>
+    <p id="form-msg" class="status"></p>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="panel hidden" id="progress-card">
+    <div class="progress">
+      <div class="spinner"></div>
+      <div class="msg" id="progress-msg">Walking it into the salon…</div>
+      <div class="sub" id="progress-sub">This usually takes a minute or so. Hang tight!</div>
+      <div class="track"><i id="track-fill" style="width:6%"></i></div>
+    </div>
+  </div>
+
+  <!-- ── Result ── -->
+  <div class="hidden" id="result-card"></div>
+
 </div>
 
-<!-- ── Progress ── -->
-<div class="card hidden" id="progress-card">
-  <p class="status" id="progress-msg">Submitting…</p>
-</div>
-
-<!-- ── Result ── -->
-<div class="hidden" id="result-card"></div>
-
+<script src="app.js"></script>
 <script>
-// ⚙️  Set this to the ApiUrl output from `sam deploy`.
-const API_URL = window.API_URL || "REPLACE_WITH_API_URL";
+// Live API (from infra/deploy_app.py output). Override via window.API_URL.
+const API_URL = window.API_URL || "https://gt5jcvia2l.execute-api.us-east-1.amazonaws.com";
+// v2 runs a single, fixed pool — no picker, no pool references in the UI.
+const POOL = "learntodraw";
 
 const $ = (id) => document.getElementById(id);
 let selectedFile = null;
 
-async function loadPools() {
-  try {
-    const r = await fetch(`${API_URL}/pools`);
-    const { pools } = await r.json();
-    const sel = $("pool");
-    sel.innerHTML = "";
-    pools.filter(p => p.ready).forEach(p => {
-      const o = document.createElement("option");
-      o.value = p.id;
-      o.textContent = `${p.label} (${p.n_pieces} pieces)`;
-      sel.appendChild(o);
-    });
-    if (!sel.options.length) $("form-msg").textContent = "No pools published yet.";
-  } catch (e) {
-    $("form-msg").innerHTML = `<span class="err">Could not load pools — is API_URL set?</span>`;
+// ── file picking (click + drag/drop) ──
+function setFile(f) {
+  if (!f || !/^image\/(jpeg|png|webp)$/.test(f.type)) {
+    $("form-msg").innerHTML = `<span class="err">That doesn’t look like a JPG, PNG, or WebP image.</span>`;
+    return;
   }
+  selectedFile = f;
+  $("form-msg").textContent = "";
+  const img = $("preview");
+  img.src = URL.createObjectURL(f);
+  img.style.display = "block";
+  $("drop-text").classList.add("hidden");
+  $("drop").classList.add("has-image");
+  $("go").disabled = false;
 }
 
-$("file").addEventListener("change", (e) => {
-  selectedFile = e.target.files[0] || null;
-  const img = $("preview");
-  if (selectedFile) {
-    img.src = URL.createObjectURL(selectedFile);
-    img.style.display = "block";
-  }
-  $("go").disabled = !selectedFile;
+$("file").addEventListener("change", (e) => setFile(e.target.files[0]));
+
+const drop = $("drop");
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, (e) => {
+  e.preventDefault(); drop.classList.add("over");
+}));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, (e) => {
+  e.preventDefault(); drop.classList.remove("over");
+}));
+drop.addEventListener("drop", (e) => {
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
 });
 
 $("go").addEventListener("click", submit);
+
+// apiJson, esc, ordinal, rangeBar, openLightbox, openComparison come from app.js.
 
 async function submit() {
   $("go").disabled = true;
   $("form-card").classList.add("hidden");
   $("progress-card").classList.remove("hidden");
-  const setMsg = (m) => $("progress-msg").textContent = m;
+  const setMsg = (m, sub) => {
+    $("progress-msg").textContent = m;
+    if (sub != null) $("progress-sub").textContent = sub;
+  };
+  const setBar = (pct) => $("track-fill").style.width = Math.max(6, Math.min(100, pct)) + "%";
 
   try {
-    // 1. presigned upload
-    setMsg("Uploading your image…");
-    const up = await (await fetch(`${API_URL}/uploads`, {
+    setMsg("Uploading your piece…", "Sending it over to the salon.");
+    setBar(12);
+    const up = await apiJson(`${API_URL}/uploads`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content_type: selectedFile.type }),
-    })).json();
-
-    // 2. PUT the file straight to S3
-    await fetch(up.upload_url, {
-      method: "PUT", headers: { "Content-Type": selectedFile.type }, body: selectedFile,
     });
 
-    // 3. create the submission (kicks off the async worker)
-    const sub = await (await fetch(`${API_URL}/submissions`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pool: $("pool").value, image_key: up.image_key, title: $("title").value,
-      }),
-    })).json();
+    const put = await fetch(up.upload_url, {
+      method: "PUT", headers: { "Content-Type": selectedFile.type }, body: selectedFile,
+    });
+    if (!put.ok) throw new Error(`upload failed (${put.status})`);
+    setBar(22);
 
-    // 4. poll
-    await poll(sub.job_id, setMsg);
+    // Single fixed pool; no title is collected or shown.
+    const sub = await apiJson(`${API_URL}/submissions`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pool: POOL, image_key: up.image_key }),
+    });
+
+    await poll(sub.job_id, setMsg, setBar);
   } catch (e) {
-    setMsg("");
-    $("progress-card").innerHTML = `<p class="err">Something went wrong: ${e}</p>`;
+    $("progress-card").innerHTML =
+      `<p class="err">Hmm, something hiccuped: ${esc(e.message)}</p>
+       <button class="btn ghost" onclick="location.reload()">Try again</button>`;
   }
 }
 
-async function poll(jobId, setMsg) {
+async function poll(jobId, setMsg, setBar) {
   for (let i = 0; i < 240; i++) {
-    const job = await (await fetch(`${API_URL}/submissions/${jobId}`)).json();
+    const job = await apiJson(`${API_URL}/submissions/${jobId}`);
     if (job.status === "running" && job.progress?.round) {
-      setMsg(`Judging… round ${job.progress.round}/${job.progress.total} `
-           + `(currently ~${job.progress.percentile}th percentile)`);
+      const { round, total } = job.progress;
+      setMsg(`The jury’s having a look… round ${round} of ${total}`,
+             "Comparing your piece against real submissions, a handful at a time.");
+      setBar(25 + (round / total) * 70);
     } else if (job.status === "queued") {
-      setMsg("Warming up the jury…");
+      setMsg("Gathering the jury…", "Almost there.");
+      setBar(18);
     } else if (job.status === "done") {
-      return render(job.result);
+      setBar(100);
+      return render(job.result, jobId);
     } else if (job.status === "error") {
-      throw new Error(job.error || "worker error");
+      throw new Error(job.error || "the jury got stuck");
     }
     await new Promise(r => setTimeout(r, 1500));
   }
-  throw new Error("timed out waiting for result");
+  throw new Error("this is taking longer than expected — try again in a bit");
 }
 
-function render(res) {
+let currentJobId = null;
+
+// The list of jury rounds, each opening a detail modal.
+function comparisonsHtml(res) {
+  const cs = res.comparisons || [];
+  if (!cs.length) return "";
+  const faced = (cs[0].size || 1) - 1;
+  return `
+    <h2 class="section-h">How the jury saw it <span class="muted">· ${cs.length} rounds</span></h2>
+    <p class="muted">Each round, your piece was set beside ${faced} others and ranked. The note
+      is what the jury said about your piece that round — open details to read the rest of the group.</p>
+    <div class="cmp-list">${cs.map(c => `
+      <div class="cmp-entry">
+        <div class="cmp-row">
+          <span class="info">Round <b>${c.cmp_id}</b>${c.phase ? ` · ${esc(c.phase)}` : ""} ·
+            ${c.flagged_not_art
+              ? `<span class="na">set aside</span>`
+              : `placed <b>${c.rank ?? "—"}/${c.size}</b>`}</span>
+          ${rangeBar(c.min_pctl, c.max_pctl, res.not_art ? null : res.percentile, c.avg_pctl)}
+          <a href="#" data-cmp="${c.cmp_id}">details ›</a>
+        </div>
+        <div class="cmp-rationale" data-rat="${c.cmp_id}"></div>
+      </div>`).join("")}</div>`;
+}
+
+// Pull each round's note for YOUR piece (the candidate) and show it inline.
+// Cached via fetchComparison so the details modal opens instantly afterward.
+function loadOwnRationales(res) {
+  (res.comparisons || []).forEach(async (c) => {
+    const el = document.querySelector(`#result-card .cmp-rationale[data-rat="${c.cmp_id}"]`);
+    if (!el) return;
+    try {
+      const detail = await fetchComparison(`${API_URL}/submissions/${currentJobId}/comparisons/${c.cmp_id}`);
+      const me = (detail.members || []).find((m) => m.is_candidate);
+      if (me && me.rationale) el.innerHTML = `“${esc(me.rationale)}”`;
+      else el.remove();
+    } catch (_) { el.remove(); }
+  });
+}
+
+function render(res, jobId) {
+  currentJobId = jobId;
   $("progress-card").classList.add("hidden");
   const card = $("result-card");
   card.classList.remove("hidden");
-  const tierHtml = (label, items) => !items?.length ? "" : `
-    <div class="tier"><h3>${label}</h3>${items.map(a => `
-      <div class="anchor">
-        <img src="${a.image_url}" alt="">
-        <div>
-          <div class="pct">${a.percentile}th percentile · vs your ${res.percentile}th</div>
-          <div class="rat">"${a.rationale || ""}"</div>
-        </div>
-      </div>`).join("")}</div>`;
 
+  // The jury didn't score it (read as an unfinished sketch every round). No fake
+  // percentile — explain gently and invite a finished piece.
+  if (res.not_art) {
+    card.innerHTML = `
+      <div class="panel">
+        <div class="result-hero">
+          <img class="art zoomable" src="${res.image_url}" data-cap="${esc("Your piece")}">
+          <div class="body">
+            <div class="headline">${esc(res.headline.headline)}</div>
+            <div class="subline" style="margin-top:6px">${esc(res.headline.subline)}</div>
+            ${res.not_art_reason ? `<div class="feedback"><b>What the jury said:</b><br>${esc(res.not_art_reason)}</div>` : ""}
+            <p class="muted" style="margin-top:12px">Tip: a finished, clearly photographed
+              drawing or painting gets a spot on the wall.</p>
+          </div>
+        </div>
+        ${comparisonsHtml(res)}
+        <button class="btn ghost" style="margin-top:18px" onclick="location.reload()">↑ Try another piece</button>
+      </div>`;
+    wireResult();
+    loadOwnRationales(res);
+    return;
+  }
+
+  const cap = esc(`Your piece — ${ordinal(res.percentile)} percentile`
+    + (res.feedback ? `. ${res.feedback}` : ""));
   card.innerHTML = `
-    <div class="card">
-      <img src="${res.image_url}" style="max-width:240px;border-radius:6px;float:right;margin-left:16px;">
-      <div style="font-size:18px;color:#444">${res.headline.headline}</div>
-      <div class="big-number">${res.percentile}<sup>th</sup></div>
-      <div style="color:#666">percentile in ${res.pool_label} · rank ${res.rank}/${res.of}</div>
-      <div class="bar"><div class="grad"></div>
-        <div class="mark" style="left:calc(${res.percentile}% - 3px)"></div></div>
-      <div style="font-size:11px;color:#999">${res.headline.subline}</div>
-      ${res.feedback ? `<div class="feedback"><b>What the jury said:</b><br>${res.feedback}</div>` : ""}
-    </div>
-    ${tierHtml("Much better than yours", res.tiers.much_better)}
-    ${tierHtml("About the same", res.tiers.similar)}
-    ${tierHtml("Weaker than yours", res.tiers.much_worse)}
-  `;
+    <div class="panel">
+      <div class="result-hero">
+        <img class="art zoomable" src="${res.image_url}" data-cap="${cap}">
+        <div class="body">
+          <div class="headline">${esc(res.headline.headline)}</div>
+          <div class="score">${res.percentile}<sup>${ordinalSuffix(res.percentile)}</sup></div>
+          <div class="score-label">percentile in the salon</div>
+          <div class="meter"><div class="grad"></div>
+            <div class="mark" style="left:calc(${res.percentile}% - 2px)"></div></div>
+          <div class="subline" style="margin-top:10px">${esc(res.headline.subline)}</div>
+        </div>
+      </div>
+      ${res.feedback ? `<div class="feedback"><b>What the jury said:</b><br>${esc(res.feedback)}</div>` : ""}
+      ${comparisonsHtml(res)}
+      <button class="btn ghost" style="margin-top:18px" onclick="location.reload()">↑ Rank another piece</button>
+    </div>`;
+  wireResult();
+  loadOwnRationales(res);
 }
 
-loadPools();
+function ordinalSuffix(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+function wireResult() {
+  document.querySelectorAll('#result-card a[data-cmp]').forEach(a =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      openComparison(`${API_URL}/submissions/${currentJobId}/comparisons/${a.dataset.cmp}`,
+                     { pool: POOL });
+    }));
+}
+
+$("result-card").addEventListener("click", (e) => {
+  const img = e.target.closest("img.zoomable");
+  if (img) openLightbox(img.src, escapeHtml(img.getAttribute("data-cap") || ""));
+});
 </script>
 </body>
 </html>

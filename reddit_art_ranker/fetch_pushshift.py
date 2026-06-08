@@ -188,10 +188,14 @@ def fetch(
     sort_by: str,
     validate: bool = True,
     oversample: float = 1.5,
+    exclude_ids: set | None = None,
 ) -> int:
+    exclude_ids = exclude_ids or set()
+    if exclude_ids:
+        print(f"Excluding {len(exclude_ids)} already-stored pieces from selection.")
     print(f"Streaming {dump_path}...")
     candidates = []
-    seen = kept = 0
+    seen = kept = skipped_existing = 0
     for line in _stream_lines(dump_path):
         seen += 1
         if seen % 25000 == 0:
@@ -201,6 +205,9 @@ def fetch(
         except json.JSONDecodeError:
             continue
         if (post.get("subreddit") or "").lower() != subreddit.lower():
+            continue
+        if post.get("id") in exclude_ids:
+            skipped_existing += 1
             continue
         if post.get("over_18"):
             continue
@@ -216,7 +223,8 @@ def fetch(
         candidates.append((post, image_url))
         kept += 1
 
-    print(f"\nScanned {seen:,} records; {kept:,} usable image posts in r/{subreddit}.")
+    print(f"\nScanned {seen:,} records; {kept:,} usable image posts in r/{subreddit}"
+          + (f" ({skipped_existing:,} skipped as already-stored)." if exclude_ids else "."))
 
     if sort_by == "score":
         candidates.sort(key=lambda x: _as_int(x[0].get("score")), reverse=True)
@@ -292,9 +300,17 @@ def main() -> None:
                         help="Skip HEAD-checking image URLs before saving")
     parser.add_argument("--oversample", type=float, default=1.5,
                         help="Pre-validation pool = limit * this multiplier")
+    parser.add_argument("--exclude-existing", action="store_true",
+                        help="Skip posts already stored for this subreddit (for "
+                             "incrementally extending a dataset with net-new pieces).")
     args = parser.parse_args()
     if not args.dump_path.exists():
         raise SystemExit(f"Dump file not found: {args.dump_path}")
+    exclude_ids = None
+    if args.exclude_existing:
+        with db.connect() as conn:
+            exclude_ids = {r["reddit_id"] for r in
+                           db.get_pieces(conn, args.subreddit, include_candidates=True)}
     fetch(
         args.dump_path,
         args.subreddit,
@@ -304,6 +320,7 @@ def main() -> None:
         args.sort,
         validate=not args.no_validate,
         oversample=args.oversample,
+        exclude_ids=exclude_ids,
     )
 
 

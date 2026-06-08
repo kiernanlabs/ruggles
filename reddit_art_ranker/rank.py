@@ -57,6 +57,52 @@ def _build_groups(piece_ids_with_elo: list, group_size: int, by_rating: bool) ->
     return groups
 
 
+def _build_extend_groups(focus_ids: list, ratings: dict, group_size: int,
+                         by_rating: bool, focus_per_group: int) -> list:
+    """Groups for EXTEND mode: each group is up to `focus_per_group` new (focus)
+    pieces plus anchor pieces drawn from the already-ranked pool, filling to
+    `group_size`. Anchors calibrate the new pieces to the global ELO scale and
+    are NOT frozen (they keep fluctuating). Returns list of piece-id groups."""
+    focus = [(pid, ratings[pid]) for pid in focus_ids if pid in ratings]
+    anchors = [(pid, ratings[pid]) for pid in ratings if pid not in set(focus_ids)]
+    if not anchors:
+        raise RuntimeError("EXTEND needs an existing ranked pool (no anchors found).")
+
+    if by_rating:
+        focus.sort(key=lambda x: x[1])
+    else:
+        random.shuffle(focus)
+
+    groups = []
+    for i in range(0, len(focus), focus_per_group):
+        chunk = focus[i:i + focus_per_group]
+        chunk_ids = [pid for pid, _ in chunk]
+        n_anchor = max(1, group_size - len(chunk_ids))
+        if by_rating:
+            mean_elo = sum(e for _, e in chunk) / len(chunk)
+            nearest = sorted(anchors, key=lambda a: abs(a[1] - mean_elo))
+            window = nearest[:max(n_anchor, min(40, len(nearest)))]
+            picks = random.sample(window, min(n_anchor, len(window)))
+        else:
+            picks = random.sample(anchors, min(n_anchor, len(anchors)))
+        groups.append(chunk_ids + [pid for pid, _ in picks])
+    random.shuffle(groups)
+    return groups
+
+
+def _load_focus_ids(conn, subreddit: str) -> list:
+    """Eligible, never-yet-compared pieces — the freshly-fetched set to rank."""
+    rows = conn.execute(
+        """
+        SELECT p.reddit_id FROM pieces p JOIN ratings r ON r.reddit_id = p.reddit_id
+        WHERE p.subreddit = ? AND p.is_candidate = 0
+              AND r.n_not_art_flags < ? AND r.n_comparisons = 0
+        """,
+        (subreddit, NOT_ART_EXCLUDE_AT),
+    ).fetchall()
+    return [r["reddit_id"] for r in rows]
+
+
 def _load_eligible(conn, subreddit: str) -> tuple[dict, dict]:
     """Eligible = not a candidate, not exceeded the not-art exclusion threshold."""
     rows = conn.execute(
@@ -73,11 +119,12 @@ def _load_eligible(conn, subreddit: str) -> tuple[dict, dict]:
     return ratings, urls
 
 
-def _run_group(group: list, urls: dict, model: str) -> dict | None:
-    """LLM call for one group. Returns a dict with rich result, or None on error."""
+def _run_group(group: list, urls: dict, rank_fn) -> dict | None:
+    """LLM call for one group. Returns a dict with rich result, or None on error.
+    `rank_fn(image_urls)` is a pre-bound ranker (local or cloud/pool-aware)."""
     image_urls = [urls[pid] for pid in group]
     try:
-        result = rank_group(image_urls, model=model)
+        result = rank_fn(image_urls)
     except Exception as e:
         return {"error": str(e), "group": group}
 
@@ -96,20 +143,57 @@ def _run_group(group: list, urls: dict, model: str) -> dict | None:
     }
 
 
+def _resolve_rank_fn(model: str, pool_id: str | None):
+    """Return a `rank_fn(image_urls)`. With --pool, route through the cloud's
+    pool-aware jury (parameterized framing/criteria from shared/pools.py) so the
+    initial ranking matches the production evaluation; otherwise use the local
+    (watercolor) prompt."""
+    if not pool_id:
+        return lambda urls: rank_group(urls, model=model)
+
+    import sys as _sys
+    from pathlib import Path as _Path
+    cloud_dir = _Path(__file__).resolve().parent.parent / "reddit_art_ranker_cloud"
+    if str(cloud_dir) not in _sys.path:
+        _sys.path.insert(0, str(cloud_dir))
+    from shared.llm import rank_group as cloud_rank_group
+    from shared.pools import get_pool
+    pool = get_pool(pool_id)
+    print(f"Using cloud pool-aware jury for '{pool_id}' "
+          f"(jury_subject={pool.jury_subject!r}).")
+    return lambda urls: cloud_rank_group(
+        urls, model=model, jury_subject=pool.jury_subject,
+        framing=pool.framing, criteria=pool.criteria)
+
+
 def run(subreddit: str, passes: int, model: str, workers: int,
-        random_passes: int) -> None:
+        random_passes: int, pool_id: str | None = None,
+        extend: bool = False, focus_per_group: int = 4) -> None:
+    rank_fn = _resolve_rank_fn(model, pool_id)
     with db.connect() as conn:
         ratings, urls = _load_eligible(conn, subreddit)
+        focus_ids = _load_focus_ids(conn, subreddit) if extend else None
 
     if len(ratings) < GROUP_SIZE:
         print(f"Need at least {GROUP_SIZE} eligible pieces, found {len(ratings)}.")
         return
 
     n = len(ratings)
-    total_groups = passes * (n // GROUP_SIZE)
     bucketed_passes = passes - random_passes
-    print(f"Ranking {n} pieces in r/{subreddit} over {passes} passes "
-          f"of {GROUP_SIZE}-way groups ({workers} workers).")
+    if extend:
+        if not focus_ids:
+            print("EXTEND: no new (0-comparison) pieces to rank. Nothing to do.")
+            return
+        groups_per_pass = -(-len(focus_ids) // focus_per_group)  # ceil
+        total_groups = passes * groups_per_pass
+        print(f"EXTENDING r/{subreddit}: ranking {len(focus_ids)} NEW pieces against "
+              f"{n - len(focus_ids)} existing anchors, over {passes} passes "
+              f"({focus_per_group} new + anchors per {GROUP_SIZE}-group, {workers} workers).")
+        print("  Existing pieces keep their ELO/comparisons and continue to fluctuate.")
+    else:
+        total_groups = passes * (n // GROUP_SIZE)
+        print(f"Ranking {n} pieces in r/{subreddit} over {passes} passes "
+              f"of {GROUP_SIZE}-way groups ({workers} workers).")
     print(f"  Phase 1: {random_passes} random passes (wide-range)")
     print(f"  Phase 2: {bucketed_passes} rating-bucketed passes (focused on close-rated)")
     print(f"Approx LLM calls: {total_groups}\n")
@@ -123,16 +207,22 @@ def run(subreddit: str, passes: int, model: str, workers: int,
             ratings, urls = _load_eligible(conn, subreddit)
 
         by_rating = pass_idx >= random_passes
-        piece_list = [(pid, ratings[pid]) for pid in ratings]
-        groups = _build_groups(piece_list, GROUP_SIZE, by_rating=by_rating)
+        if extend:
+            groups = _build_extend_groups(focus_ids, ratings, GROUP_SIZE,
+                                          by_rating, focus_per_group)
+            n_focus_live = sum(1 for pid in focus_ids if pid in ratings)
+            scope = f"{n_focus_live} new + anchors"
+        else:
+            piece_list = [(pid, ratings[pid]) for pid in ratings]
+            groups = _build_groups(piece_list, GROUP_SIZE, by_rating=by_rating)
+            scope = f"{len(ratings)} eligible"
         mode = "rating-bucketed" if by_rating else "random"
-        print(f"Pass {pass_idx + 1}/{passes} ({mode}, {len(ratings)} eligible): "
-              f"{len(groups)} groups")
+        print(f"Pass {pass_idx + 1}/{passes} ({mode}, {scope}): {len(groups)} groups")
 
         pass_start = time.time()
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
-            futures = {ex.submit(_run_group, g, urls, model): i for i, g in enumerate(groups)}
+            futures = {ex.submit(_run_group, g, urls, rank_fn): i for i, g in enumerate(groups)}
             done = 0
             for fut in concurrent.futures.as_completed(futures):
                 results.append((futures[fut], fut.result()))
@@ -213,8 +303,19 @@ def main() -> None:
     parser.add_argument("--model", default=LLM_MODEL)
     parser.add_argument("--workers", type=int, default=5,
                         help="Concurrent LLM calls per pass")
+    parser.add_argument("--pool", default=None,
+                        help="Cloud pool id (shared/pools.py). When set, ranks with "
+                             "that pool's framing/criteria via the cloud jury.")
+    parser.add_argument("--extend", action="store_true",
+                        help="Incremental mode: rank only NEW (0-comparison) pieces, "
+                             "drawing existing pieces in as (unfrozen) anchors. "
+                             "Existing ELO/comparisons are preserved and keep moving.")
+    parser.add_argument("--focus-per-group", type=int, default=4,
+                        help="New pieces per group in --extend mode; the rest are anchors "
+                             "(default 4 new + 1 anchor in a 5-group).")
     args = parser.parse_args()
-    run(args.subreddit, args.passes, args.model, args.workers, args.random_passes)
+    run(args.subreddit, args.passes, args.model, args.workers, args.random_passes,
+        pool_id=args.pool, extend=args.extend, focus_per_group=args.focus_per_group)
 
 
 if __name__ == "__main__":

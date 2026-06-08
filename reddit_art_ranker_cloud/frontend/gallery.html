@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery · Mini Art Salon</title>
+<meta name="description" content="Wander ~1,000 pieces from artists at every stage of their learning journey — filter by where they landed and peek at how the jury judged each one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;680&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="dot"></span> Mini Art Salon</a>
+    <div class="nav-links">
+      <a href="index.html">Rank yours</a>
+    </div>
+  </nav>
+
+  <h1 class="page-title">The gallery</h1>
+  <p class="page-sub">~1,000 pieces from artists all over their learning journey, ranked by a friendly
+    jury. Slide to browse by where they landed, and open any piece to see how it was judged.</p>
+
+  <div class="panel">
+    <span class="label">Browse by percentile</span>
+    <div class="toolbar">
+      <div class="range-wrap">
+        <div class="range-track"></div>
+        <div class="range-fill" id="fill"></div>
+        <input type="range" id="lo" min="0" max="100" value="0">
+        <input type="range" id="hi" min="0" max="100" value="100">
+      </div>
+    </div>
+    <div class="range-readout">Showing <b id="loOut">0</b>–<b id="hiOut">100</b><sup></sup> percentile</div>
+    <div class="toolbar" style="margin-top:14px">
+      <button class="btn ghost" id="load">Browse</button>
+      <button class="btn ghost" id="prev" disabled>‹ Prev</button>
+      <button class="btn ghost" id="next" disabled>Next ›</button>
+      <span class="pageinfo" id="pageInfo"></span>
+    </div>
+    <p class="muted" id="msg"></p>
+  </div>
+
+  <div class="grid" id="results"></div>
+
+  <footer class="foot">
+    See something you love? · <a href="index.html">add your own piece →</a>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+const API_URL = window.API_URL || "https://gt5jcvia2l.execute-api.us-east-1.amazonaws.com";
+const POOL = "learntodraw";
+const $ = (id) => document.getElementById(id);
+const PAGE = 24;
+let offset = 0, total = 0;
+
+// ── dual slider ──
+const lo = $("lo"), hi = $("hi");
+function syncSlider() {
+  let a = +lo.value, b = +hi.value;
+  if (a > b) { [a, b] = [b, a]; }
+  $("loOut").textContent = a;
+  $("hiOut").textContent = b;
+  $("fill").style.left = a + "%";
+  $("fill").style.width = (b - a) + "%";
+}
+lo.addEventListener("input", syncSlider);
+hi.addEventListener("input", syncSlider);
+function rangeVals() {
+  const a = +lo.value, b = +hi.value;
+  return a <= b ? [a, b] : [b, a];
+}
+
+async function browse() {
+  const [min, max] = rangeVals();
+  $("msg").textContent = "Loading…";
+  try {
+    const data = await apiJson(
+      `${API_URL}/pools/${POOL}/pieces?min=${min}&max=${max}&offset=${offset}&limit=${PAGE}`);
+    total = data.total;
+    renderPieces(data.pieces);
+    const from = total ? offset + 1 : 0;
+    const to = Math.min(offset + PAGE, total);
+    $("pageInfo").textContent = total ? `${from}–${to} of ${total}` : "";
+    $("prev").disabled = offset <= 0;
+    $("next").disabled = offset + PAGE >= total;
+    $("msg").textContent = total ? "" : "No pieces in this range — try widening it.";
+  } catch (e) {
+    $("msg").innerHTML = `<span class="err">${esc(e.message)}</span>`;
+  }
+}
+
+function renderPieces(pieces) {
+  const root = $("results");
+  root.innerHTML = "";
+  pieces.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "tile";
+    el.innerHTML = `
+      <img class="thumb" src="${p.image_url || ""}" alt="" loading="lazy">
+      <div class="info">
+        <div class="pctl">${p.percentile}<sup>${ordinalSuffix(p.percentile)}</sup></div>
+        <div class="rank-badge">percentile in the salon</div>
+        <div class="links">
+          <a href="piece.html?id=${encodeURIComponent(p.piece_id)}">where it landed ›</a>
+        </div>
+      </div>`;
+    el.querySelector(".thumb").addEventListener("click", () => openLightbox(p.image_url,
+      `<b>a salon piece</b><br><span class="pct">${ordinal(p.percentile)}</span> percentile in the salon`));
+    root.appendChild(el);
+  });
+}
+
+function ordinalSuffix(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+$("load").addEventListener("click", () => { offset = 0; browse(); });
+$("prev").addEventListener("click", () => { offset = Math.max(0, offset - PAGE); browse(); });
+$("next").addEventListener("click", () => { offset += PAGE; browse(); });
+
+syncSlider();
+browse();
+</script>
+</body>
+</html>

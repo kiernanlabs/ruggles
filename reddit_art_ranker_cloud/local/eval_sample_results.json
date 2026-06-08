@@ -1,0 +1,753 @@
+{
+  "pool_id": "learntodraw",
+  "pool_label": "Learn To Draw",
+  "pool_size": 824,
+  "model": "google/gemini-3.1-flash-lite",
+  "insertion_groups": 8,
+  "seed": 42,
+  "n_sample": 20,
+  "elapsed_sec": 178.3,
+  "results": [
+    {
+      "id": "1690df61-3a25-46b6-b19e-4c4a5e49d9c8",
+      "title": "“Whirlwind of Blades – Jett in Motion”",
+      "artist": "Riot",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1745755224/artwork/nxonksstbwcl2vh3geei.png",
+      "sketch_type": "full realism",
+      "streamlit_avg_score": 16.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 17,
+        "line_quality_score": 18,
+        "form_volume_score": 17,
+        "mood_expression_score": 16,
+        "value_light_score": 15,
+        "detail_texture_score": 16,
+        "composition_perspective_score": 17,
+        "overall_realism_score": 16
+      },
+      "cloud_rank": 10,
+      "cloud_of": 824,
+      "cloud_percentile": 99,
+      "cloud_elo": 1847.6,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the top tier.",
+        "subline": "Stronger craft than the vast majority of submissions."
+      },
+      "feedback": "Your work consistently stands out for its professional finish, particularly in your dynamic character poses and confident, clean linework. You have clearly mastered the fundamentals of strong character design and composition, resulting in highly polished and appealing illustrations. To continue pushing your craft, consider experimenting with more complex narrative elements or varied lighting techniques to add even more depth to your already skillful technical execution.",
+      "round_rationales": [
+        "High-level rendering and dynamic composition make this piece stand out as the most accomplished work.",
+        "Dynamic pose and professional line work show a high level of technical competency and clear character design.",
+        "Strong character design and dynamic posing with clean, confident line work.",
+        "High level of technical finish with dynamic composition and professional-grade character design.",
+        "High-quality character illustration with dynamic composition and professional-level line work.",
+        "This piece features highly dynamic posing, confident line work, and an appealing stylized character design.",
+        "This piece has excellent professional polish, dynamic composition, and sophisticated linework.",
+        "Strong character design and dynamic posing with professional color application."
+      ]
+    },
+    {
+      "id": "24e31071-8f85-42ed-997b-edf0dac6567f",
+      "title": "Quiet Gaze in Profile Rest",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776561820/artwork/cuidw2osdk9ueyopw1jn.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 13.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 14,
+        "line_quality_score": 13,
+        "form_volume_score": 12,
+        "mood_expression_score": 16
+      },
+      "cloud_rank": 350,
+      "cloud_of": 824,
+      "cloud_percentile": 58,
+      "cloud_elo": 1540.5,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is above the median.",
+        "subline": "Better than more than half of the submissions."
+      },
+      "feedback": "You have a strong grasp of facial proportions and have clearly put a lot of focused effort into using shading to create depth and structure. To take your work to the next level, try to refine your blending technique and watch your pressure to ensure the shading feels smooth rather than heavy-handed. You are definitely on the right track, so keep practicing these details to bring more polish to your future portraits.",
+      "round_rationales": [
+        "This piece shows the most successful integration of shadow, form, and composition of the portrait studies presented.",
+        "While the proportions are stylized, the shading and facial features show a consistent effort to create a structured portrait.",
+        "While the proportions are a bit stylized, the attempt at facial shading shows an effort to give the drawing depth.",
+        "While the proportions are a bit stiff, the shading shows a good attempt at facial structure and volume.",
+        "This portrait shows a good grasp of facial proportions and effective shading, resulting in a believable and engaging study.",
+        "While the portrait shows a good grasp of facial proportions and basic shading, the rendering feels a bit heavy-handed compared to the other works.",
+        "Shows a good attempt at portrait shading and facial proportion, though the technique feels slightly unpolished.",
+        "A decent portrait with a clear sense of proportions and light mapping, though the shading on the neck feels somewhat rushed."
+      ]
+    },
+    {
+      "id": "a4c04757-a08a-4418-b17b-3955b881c208",
+      "title": "Warm Hugs on a Sticky Note",
+      "artist": "Joel",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1744852587/artwork/uhvluqwehvmbu066nty7.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 12.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 12,
+        "form_volume_score": 10,
+        "mood_expression_score": 15
+      },
+      "cloud_rank": 373,
+      "cloud_of": 824,
+      "cloud_percentile": 55,
+      "cloud_elo": 1528.1,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is above the median.",
+        "subline": "Better than more than half of the submissions."
+      },
+      "feedback": "You have a great eye for character likeness, and your ability to capture the unique essence of your subjects in a clean, consistent style really shines through. To take your work to the next level, try experimenting with more varied line weights and added shading to give your illustrations more depth and a less \"sketch-like\" feel. You clearly have a strong foundation, so keep building on those technical details to turn your charming character studies into more polished, finished pieces.",
+      "round_rationales": [
+        "The lines are clean and accurately capture the likeness of the characters, feeling like a successful study.",
+        "It is a charming and recognizable sketch, though the likeness is slightly stiff and the line quality is thin.",
+        "This is a clean and competent character sketch that captures the essence of the subjects well.",
+        "The character likeness is recognizable, though the execution remains simple and developmental.",
+        "The linework is simplistic and lacks depth, appearing more like a casual sketch than a polished piece.",
+        "The artist demonstrates a strong grasp of character likeness and clean, consistent line quality.",
+        "This piece displays excellent character likenesses and clean, confident line work that captures the expressive style of the subjects.",
+        "While the character likenesses are pleasant and recognizable, the technical execution is somewhat simple."
+      ]
+    },
+    {
+      "id": "24b26283-dda2-4eb5-be17-0db43fecb786",
+      "title": "Emerald Gaze in Half-Light",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776562816/artwork/b4twuyomrtjgmv5dpqc7.jpg",
+      "sketch_type": "full realism",
+      "streamlit_avg_score": 14.12,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 14,
+        "form_volume_score": 14,
+        "mood_expression_score": 16,
+        "value_light_score": 15,
+        "detail_texture_score": 13,
+        "composition_perspective_score": 14,
+        "overall_realism_score": 14
+      },
+      "cloud_rank": 384,
+      "cloud_of": 824,
+      "cloud_percentile": 53,
+      "cloud_elo": 1520.9,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece sits around the middle.",
+        "subline": "Comparable craft to a typical submission."
+      },
+      "feedback": "You have a real talent for using color and high-contrast lighting to create a compelling, dramatic atmosphere in your portraits. While your eye for mood is a major strength, you could elevate your work further by focusing on smoother shading transitions and refining your understanding of facial anatomy and proportions. With a little more attention to blending and structure, your expressive style will become even more polished and impactful.",
+      "round_rationales": [
+        "While the shading is a bit bold, the drawing effectively uses color and high-contrast light to create a dramatic mood.",
+        "The drawing shows an attempt at complex shading, but the transitions are choppy and the facial proportions feel a bit unbalanced.",
+        "The eyes are striking, but the heavy, uneven shading on the face struggles with anatomy and form.",
+        "While the dramatic lighting is a good attempt, the final result feels unresolved due to heavy, inconsistent shading on the face.",
+        "This piece demonstrates a sophisticated use of color and shading that gives the portrait a compelling, atmospheric quality.",
+        "While ambitious in its use of color, the drawing is hindered by unclear anatomical structure and heavy-handed application of medium.",
+        "The portrait demonstrates a sophisticated use of colored pencil blending and shading that gives the face a realistic and dimensional quality.",
+        "The emotive shading and dramatic lighting on the face create a compelling, moody atmosphere."
+      ]
+    },
+    {
+      "id": "fb82b2da-2dcb-4f95-aa1d-9cfa10df36f7",
+      "title": "The Curious Side-Glance",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1747184849/artwork/qvwih6xpd6wpdyceuckn.jpg",
+      "sketch_type": "full realism",
+      "streamlit_avg_score": 10.88,
+      "streamlit_per_criterion": {
+        "proportion_score": 11,
+        "line_quality_score": 12,
+        "form_volume_score": 10,
+        "mood_expression_score": 14,
+        "value_light_score": 9,
+        "detail_texture_score": 8,
+        "composition_perspective_score": 12,
+        "overall_realism_score": 11
+      },
+      "cloud_rank": 389,
+      "cloud_of": 824,
+      "cloud_percentile": 53,
+      "cloud_elo": 1516.8,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece sits around the middle.",
+        "subline": "Comparable craft to a typical submission."
+      },
+      "feedback": "You have a great eye for color and shading, and you are clearly successful at capturing a recognizable likeness in your portraits. To take your work to the next level, focus on loosening up your technique to address some of the current stiffness and practice refining your facial proportions. You have a solid foundation, so keep experimenting and trust your instincts as you balance your expressive style with more precise anatomy.",
+      "round_rationales": [
+        "While the proportions are a bit distorted, the artist successfully experiments with color and value on the face.",
+        "It captures a good likeness with expressive shading, though the proportions feel slightly unrefined.",
+        "There is a solid attempt at portraiture with effective use of shading and color to capture a recognizable likeness.",
+        "It shows recognizable likeness and effort in shading, though the facial proportions and blending appear somewhat stiff.",
+        "The portrait has a decent attempt at capturing a facial expression, though the shading feels a bit heavy-handed in certain areas.",
+        "The portrait captures a recognizable likeness but suffers from uneven shading and some anatomical stiffness.",
+        "Features expressive shading and a decent attempt at capturing facial features, though it feels a bit unrefined in its execution.",
+        "While the proportions are a bit off, the shading and use of color create a more finished and atmospheric look than the lighter sketches."
+      ]
+    },
+    {
+      "id": "21d00833-4a12-4e8a-9d4f-c8be27cc1dcb",
+      "title": "Reclining Figure on an Armchair",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776561724/artwork/jf6vkvowhfaj6tbvsnxb.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 13.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 14,
+        "form_volume_score": 12,
+        "mood_expression_score": 16
+      },
+      "cloud_rank": 413,
+      "cloud_of": 824,
+      "cloud_percentile": 50,
+      "cloud_elo": 1505.8,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece sits around the middle.",
+        "subline": "Comparable craft to a typical submission."
+      },
+      "feedback": "You have a real gift for capturing natural, relatable moments that feel authentic and engaging to the viewer. While your ability to tell a story through a pose is strong, you can improve your work by practicing anatomical accuracy and using more confident, deliberate line work to give your figures more presence. Keep leaning into your talent for narrative, and try to balance that charm with a bit more structural precision next time.",
+      "round_rationales": [
+        "The drawing exhibits a clear observational effort in capturing a natural pose and composition.",
+        "A charming and readable study of a figure in rest, despite some proportional inconsistencies.",
+        "A charming and relatable sketch that successfully captures a quiet, character-focused moment.",
+        "While the anatomy is a bit simplified, it successfully conveys a specific, relatable scene with intentional line work.",
+        "While the composition is clear, the figure lacks anatomical definition and the lines feel somewhat tentative.",
+        "It captures a specific, relatable moment with decent observation of form, even if the proportions are somewhat stylized.",
+        "There is a nice sense of weight and rest in the figure, though the line work is a bit hesitant.",
+        "There is a compelling sense of narrative and figure placement in this piece that makes the scene feel very natural and engaging."
+      ]
+    },
+    {
+      "id": "6e17adf3-4def-4582-a6f1-5eb66568a320",
+      "title": "Quiet Bite by the Window",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776562070/artwork/jahkqatmjni9xkqeocws.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 13.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 14,
+        "line_quality_score": 13,
+        "form_volume_score": 12,
+        "mood_expression_score": 16
+      },
+      "cloud_rank": 471,
+      "cloud_of": 824,
+      "cloud_percentile": 43,
+      "cloud_elo": 1474.8,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece sits around the middle.",
+        "subline": "Comparable craft to a typical submission."
+      },
+      "feedback": "Your work has a wonderful ability to capture quiet, narrative moods through your delicate line work and thoughtful use of color. To elevate your pieces further, try focusing on refining your anatomical proportions and building more confidence in your strokes to give your subjects a more solid, finished presence. You have a great eye for atmosphere, so keep leaning into those observational strengths as you continue to develop your technical precision.",
+      "round_rationales": [
+        "It captures a quiet, contemplative scene with good anatomical awareness despite the sparse use of color.",
+        "This drawing has some appealing elements but ultimately suffers from disproportionate anatomy and a lack of depth.",
+        "The drawing feels structurally incomplete with shaky line work and underdeveloped coloring.",
+        "While the composition is clear, the linework feels hesitant and the color application is somewhat sparse.",
+        "The drawing represents a complete action scene, though the anatomical proportions and outlines appear a bit rigid.",
+        "The colored pencil work captures a lovely, authentic atmosphere with expressive lines and good observation.",
+        "The soft use of color and gentle lines create a very pleasing, atmospheric, and finished look.",
+        "The delicate line work and selective use of color create a charming, observational scene that captures a calm, narrative atmosphere."
+      ]
+    },
+    {
+      "id": "9bdba59b-8c46-43b7-981a-8978854cb382",
+      "title": "Lifted Laughter Under a Passing Cloud",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776559362/artwork/pifbat9zamwtikckjvwv.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 12.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 12,
+        "line_quality_score": 13,
+        "form_volume_score": 10,
+        "mood_expression_score": 16
+      },
+      "cloud_rank": 518,
+      "cloud_of": 824,
+      "cloud_percentile": 37,
+      "cloud_elo": 1446.7,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "You have a wonderful talent for capturing expressive, dynamic poses and heart-warming interactions that really tell a clear story. While your concepts and composition are strong, focusing on refining your line quality and double-checking your anatomical proportions will help your work feel more polished and intentional. Your artistic energy is very engaging, and with a bit more attention to detail in your execution, your pieces will become even more impactful.",
+      "round_rationales": [
+        "The figures have a consistent style and an engaging, dynamic pose, despite the somewhat uneven line quality.",
+        "This piece has a strong, emotive composition that captures a sweet, genuine interaction between two figures.",
+        "The composition is clear and charming, although the figure anatomy and line quality are a bit shaky.",
+        "The line work is somewhat shaky, and the anatomical proportions and composition feel unfinished compared to the other submissions.",
+        "The gesture of the figures is captured with a charming, loose energy, but the rendering is incomplete.",
+        "It captures a dynamic, expressive pose with confident line work that feels lively and intentional.",
+        "The drawing successfully depicts an engaging human interaction with pleasing proportions and a clear narrative focus.",
+        "This piece has an endearing concept and clear composition, although the line quality is a bit tentative."
+      ]
+    },
+    {
+      "id": "07bb23b7-ec9b-432c-bba0-4b40fdab5788",
+      "title": "Quiet Smile on the Ledge",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776559731/artwork/mpmgh77fhuvbrfeb4b8m.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 12.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 12,
+        "form_volume_score": 11,
+        "mood_expression_score": 15
+      },
+      "cloud_rank": 526,
+      "cloud_of": 824,
+      "cloud_percentile": 36,
+      "cloud_elo": 1442.6,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "You have a clear talent for character design and creating readable, charming portraits that effectively capture a subject. To take your work to the next level, focus on building confidence in your line work and deepening your shading to give your figures more volume. With continued practice on anatomical precision, your natural sense of style will really begin to shine.",
+      "round_rationales": [
+        "It is a deliberate, finalized portrait that shows better anatomical control and shading application than the others.",
+        "The proportions are awkward, and the line work is hesitant, making the figure look quite stiff.",
+        "Pleasing character design with a clean, understated use of color.",
+        "It has a charming illustrative quality, though the anatomy in the arms and hands is a bit underdeveloped.",
+        "The drawing shows a solid understanding of proportions and creates a convincingly natural pose with subtle color application.",
+        "Displays a basic attempt at figure drawing, but the proportions and line quality are quite shaky.",
+        "While the figure is proportionate and readable, the overall shading and line work appear a bit hesitant and lack depth.",
+        "The anatomy of the figure is a bit stiff and the coloring feels somewhat tentative, though it remains a recognizable and readable attempt at a portrait."
+      ]
+    },
+    {
+      "id": "19d7159e-8eb3-40ae-a6b4-656f4f1030b7",
+      "title": "Young Karateka in Training",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776540872/artwork/scbwvbfjs9damixbtxyy.jpg",
+      "sketch_type": "full realism",
+      "streamlit_avg_score": 12.0,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 12,
+        "form_volume_score": 11,
+        "mood_expression_score": 15,
+        "value_light_score": 10,
+        "detail_texture_score": 11,
+        "composition_perspective_score": 12,
+        "overall_realism_score": 12
+      },
+      "cloud_rank": 534,
+      "cloud_of": 824,
+      "cloud_percentile": 35,
+      "cloud_elo": 1438.4,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "Your work has a lovely, charming quality, and your ability to capture expressive poses and thoughtful compositions really shines through. To take your drawings to the next level, try to lean into more confident, defined linework and practice refining your anatomical proportions. With a bit more boldness in your technique, your delicate style will feel much more polished and complete.",
+      "round_rationales": [
+        "Includes anatomical errors and a very simple approach that feels unfinished compared to the other works.",
+        "The drawing captures a clear pose and likeness, though the linework remains somewhat hesitant and simple.",
+        "An earnest attempt at figure drawing, though the overall composition and line work are quite faint and underdeveloped.",
+        "Delicate linework and soft coloring create a pleasant, charming composition, though the overall work feels somewhat unfinished.",
+        "It has a charming and delicate approach to sketching, though the proportions and perspective feel a bit hesitant throughout.",
+        "The drawing has a soft, illustrative quality with a well-composed figure that feels calm and thoughtful.",
+        "This captures a nice pose with gentle, expressive lines, though the anatomical proportions are slightly simplified.",
+        "It possesses a charming, soft quality with a nice attempt at conveying a specific scene, though it remains quite faint in its execution."
+      ]
+    },
+    {
+      "id": "b3e41f5b-050e-472a-8440-7a67d09dd675",
+      "title": "Quiet Smiles: Two Child Portrait Studies",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776562930/artwork/kbbgfqwzbezxpfctp1l5.jpg",
+      "sketch_type": "full realism",
+      "streamlit_avg_score": 14.0,
+      "streamlit_per_criterion": {
+        "proportion_score": 15,
+        "line_quality_score": 14,
+        "form_volume_score": 13,
+        "mood_expression_score": 17,
+        "value_light_score": 12,
+        "detail_texture_score": 14,
+        "composition_perspective_score": 13,
+        "overall_realism_score": 14
+      },
+      "cloud_rank": 551,
+      "cloud_of": 824,
+      "cloud_percentile": 33,
+      "cloud_elo": 1425.9,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "You have a natural talent for capturing expressive likenesses and using color in a way that feels charming and intentional. To take your work to the next level, try focusing on strengthening your structural foundation and line work to help your figures feel more grounded and confident. With a bit more practice on anatomy and consistent shading, your already appealing portraits will truly shine.",
+      "round_rationales": [
+        "While the effort to capture likeness is clear, the coloring and shading are uneven and lack depth.",
+        "The two portrait studies have an appealing soft approach, though the proportions appear slightly uneven.",
+        "The drawing feels unfinished and underdeveloped, with uneven application of color and uncertain line work.",
+        "The drawings lack structural form and have uneven application of color, appearing quite unfinished.",
+        "These portraits show a good attempt at layering color and capturing expressive faces, resulting in a charming and finished appearance.",
+        "Pleasant color usage and a sweet, gentle style, though the anatomy and proportions are quite rough.",
+        "While the proportions are illustrative, the use of color and shading shows a clear attempt at capturing personality and form.",
+        "While the color work captures a nice likeness, the application feels a bit hesitant compared to the other more confident sketches."
+      ]
+    },
+    {
+      "id": "26e9238d-229f-412e-a7aa-df33faf394ee",
+      "title": "Quiet Figure with Companion Studies",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776559636/artwork/nvocdn7z7ummdv1btb88.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 11.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 12,
+        "line_quality_score": 11,
+        "form_volume_score": 10,
+        "mood_expression_score": 14
+      },
+      "cloud_rank": 590,
+      "cloud_of": 824,
+      "cloud_percentile": 28,
+      "cloud_elo": 1402.8,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "Your confident, expressive linework gives your characters a wonderful sense of personality and charm. To take your work to the next level, try focusing more on your overall composition to ensure your pieces feel intentional and unified rather than scattered. With a bit more attention to structural balance and focal points, your natural drawing talent will really shine.",
+      "round_rationales": [
+        "The gestural, confident linework creates an engaging and expressive character portrait.",
+        "Soft, expressive linework with a nice grasp of facial features and character personality.",
+        "The loose line work holds some charm, but the composition feels quite scattered and unfinished.",
+        "The sketches are technically competent but feel quite loose and unfinished, lacking a cohesive composition.",
+        "While the line work shows some confidence, the composition is disjointed and lacks a clear focal point.",
+        "This piece shows a confident, minimalist linework style that captures a relaxed human gesture quite effectively.",
+        "Expressive, gestural line work that captures likeness while maintaining a clean, charming sketchbook aesthetic.",
+        "The line quality is quite hesitant and the proportions appear noticeably distorted relative to the intended viewpoint."
+      ]
+    },
+    {
+      "id": "f17e65a0-4035-4612-9e6a-9cd68fd5a8ad",
+      "title": "Blue in the Winter Woods",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776561208/artwork/lbz2gwrga2jprhieruwp.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 13.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 14,
+        "form_volume_score": 11,
+        "mood_expression_score": 16
+      },
+      "cloud_rank": 593,
+      "cloud_of": 824,
+      "cloud_percentile": 28,
+      "cloud_elo": 1397.7,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "You have a wonderful sense of atmosphere and charm that gives your work a gentle, storybook quality. To take your art to the next level, try focusing on building more confidence in your linework and adding bolder shading to give your figures more depth and structure. With a bit more attention to anatomical proportions and a firmer hand in your application, your pieces will feel fully realized and impactful.",
+      "round_rationales": [
+        "The drawing represents a gentle, clean effort, though the anatomy and proportions feel somewhat underdeveloped.",
+        "The drawing shows a decent attempt at composition and color, though the linework remains somewhat hesitant and scratchy.",
+        "While the character has an appealing expression, the light shading leaves the overall composition feeling rather unfinished.",
+        "The drawing feels unfinished, with very light pressure and a lack of depth compared to the other submissions.",
+        "A gentle and charming portrait that uses soft shading to establish an atmosphere.",
+        "The drawing feels unfinished and lacks depth, with uneven color application and proportions that do not feel fully realized.",
+        "The drawing has a gentle, storybook atmosphere, though the composition feels a bit unfinished.",
+        "The atmospheric attempt to integrate a human figure with a background shows ambition, despite inconsistent proportions."
+      ]
+    },
+    {
+      "id": "429893f6-486e-4bfd-a7e6-e91209d3cc95",
+      "title": "“Ember Crown Gambit”",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1743989201/artwork/vtfc49spusxpgq5kgrdn.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 10.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 12,
+        "line_quality_score": 9,
+        "form_volume_score": 8,
+        "mood_expression_score": 13
+      },
+      "cloud_rank": 627,
+      "cloud_of": 824,
+      "cloud_percentile": 24,
+      "cloud_elo": 1376.2,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "You have a clear talent for character design and understanding facial structure, which gives your portraits a strong foundation. To take your work to the next level, try to be more deliberate and firm with your linework so that your details stand out more clearly. With a bit more confidence in your strokes and a cleaner finish, your drawings will become much more impactful and easy to read.",
+      "round_rationales": [
+        "The proportions of the head and features feel a bit off, even though the shading attempt on the hair shows promise.",
+        "There is a nice focus on detail in the character's features and clothing, though the sketch remains a bit loose.",
+        "This portrait exhibits the most confident line work and effective facial structure, showing promise in character portraiture.",
+        "Pleasant character sketch, but lacking in definition and complete rendering compared to the other entries.",
+        "The drawing is quite faint and lacks definition, making the overall composition difficult to read.",
+        "The drawing shows decent character design, but the lines are a bit faint and uncertain.",
+        "This sketch demonstrates a good grasp of facial structure and expressive anatomy, making it the most polished and convincing piece.",
+        "The drawing is quite faint and lacks definition, making it difficult to fully discern the intended form and details."
+      ]
+    },
+    {
+      "id": "76f19dd8-afec-49df-80a4-d2d0d5b27ac3",
+      "title": "Quiet Confidence in a Pink Coat",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1776559529/artwork/tel2siwarhz15s2xs0ua.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 12.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 13,
+        "line_quality_score": 12,
+        "form_volume_score": 10,
+        "mood_expression_score": 15
+      },
+      "cloud_rank": 646,
+      "cloud_of": 824,
+      "cloud_percentile": 22,
+      "cloud_elo": 1364.9,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is below average.",
+        "subline": "Some clear strengths but room to grow."
+      },
+      "feedback": "Your work has a lovely, minimalist charm and a natural sense of style that really makes your illustrations stand out. While your eye for gesture and composition is growing, try focusing more on the underlying anatomy and structural foundations to help your figures feel more solid and defined. With a bit more practice on your construction, your confident sense of line will truly shine.",
+      "round_rationales": [
+        "A charming and simple character sketch, though the anatomy and proportions are quite stylized and underdeveloped.",
+        "It is a charming and well-composed fashion illustration with a delicate, confident line style.",
+        "The drawing captures a graceful gesture with simple, elegant lines, though it remains a basic study.",
+        "The loose, sketchy approach has a certain charm, but the proportions and construction of the figure are quite shaky.",
+        "The proportions appear slightly awkward and the line work feels hesitant and lacklustre.",
+        "This piece shows a thoughtful use of line and color to create a complete and stylish illustration.",
+        "Minimalist style with nice color accents, though the anatomical proportions are quite abstracted.",
+        "The drawing feels structurally weak and unfinished, with line work that struggles to define the figure's form or pose."
+      ]
+    },
+    {
+      "id": "b299138c-379d-4107-b8cc-6f11aabf5d11",
+      "title": "Folded-Arms Smile",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1743291352/artwork/ijnyc2l0epgn8yuwe9gj.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 7.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 8,
+        "line_quality_score": 7,
+        "form_volume_score": 6,
+        "mood_expression_score": 10
+      },
+      "cloud_rank": 665,
+      "cloud_of": 824,
+      "cloud_percentile": 19,
+      "cloud_elo": 1353.1,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the lower tier.",
+        "subline": "Lots of growth opportunity — see the comparisons."
+      },
+      "feedback": "You clearly put a lot of effort into capturing this portrait, and your commitment to developing the shading and features is a great foundation to build on. To improve the final result, try focusing on refining your structural proportions and using more confident, deliberate line work to help the form stand out clearly. With a little more attention to planning your composition and steadying your strokes, your next piece will have much more clarity and depth.",
+      "round_rationales": [
+        "The proportions of the face appear distorted and the line work is somewhat scratchy and unfinished compared to the other entries.",
+        "The depiction of the face shows some effort, but the overall structure and proportions are significantly distorted.",
+        "Very rough sketch with limited structural definition and uneven shading techniques.",
+        "The drawing represents a reasonable attempt at portraiture, but lacks depth and structural certainty in the features.",
+        "The proportions are disjointed, and the loose, scratchy line quality makes the image difficult to read clearly.",
+        "This piece shows a clear effort at capturing portraiture, though the structure feels a bit distorted and the shading is hesitant.",
+        "This piece shows the most care in shading and defining features on the subject's face.",
+        "The composition feels a bit cramped and the pencil work is light and somewhat messy, making the overall form difficult to read."
+      ]
+    },
+    {
+      "id": "5aa6be6c-fa2c-46b8-bac5-16639e227274",
+      "title": "Quiet Resolve",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1744372153/artwork/kkscwmsbqpdxlyiglctf.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 9.75,
+      "streamlit_per_criterion": {
+        "proportion_score": 10,
+        "line_quality_score": 9,
+        "form_volume_score": 8,
+        "mood_expression_score": 12
+      },
+      "cloud_rank": 666,
+      "cloud_of": 824,
+      "cloud_percentile": 19,
+      "cloud_elo": 1351.7,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the lower tier.",
+        "subline": "Lots of growth opportunity — see the comparisons."
+      },
+      "feedback": "Your drawing shows a great eye for capturing a recognizable likeness and personality in your subject. While your expressive line work brings a lot of charm to the piece, you can continue to improve by focusing on developing more consistent facial proportions and intentional shading. Keep practicing, as your sincere approach to character is a wonderful foundation to build upon.",
+      "round_rationales": [
+        "Shows a decent attempt at portraiture with some expressive line work in the hair and clothing, despite some proportional awkwardness.",
+        "The drawing captures a recognizable facial expression, though the proportions and line work feel a bit tentative.",
+        "It is a charming and personal drawing with a clear focus on character features, despite somewhat uneven line work.",
+        "While it shows an attempt at portraiture, the structure remains uncertain and the proportions are largely undeveloped.",
+        "While the effort is sincere, the linework appears hesitant and lacks cohesive shading or anatomical structure.",
+        "It is a charming and personal drawing with a clear attempt at facial structure and figure work.",
+        "The drawing shows expressive line work and captures a clear facial expression despite the informal nature of the paper.",
+        "The drawing captures a recognizable likeness, although the proportions and overall control are a bit shaky."
+      ]
+    },
+    {
+      "id": "6d994d92-90f1-4ff2-902c-e638d577d43d",
+      "title": "“Tethered Launch Across Shattered Isles”",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1743335647/artwork/blotf2oqh9i9bc0fczax.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 10.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 11,
+        "line_quality_score": 10,
+        "form_volume_score": 9,
+        "mood_expression_score": 12
+      },
+      "cloud_rank": 674,
+      "cloud_of": 824,
+      "cloud_percentile": 18,
+      "cloud_elo": 1345.2,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the lower tier.",
+        "subline": "Lots of growth opportunity — see the comparisons."
+      },
+      "feedback": "You have a wonderful imagination and a clear talent for world-building, as your creative concepts and sense of scale really bring your sci-fi landscapes to life. To take your work to the next level, try practicing steadier linework and more deliberate color layering to help give your scenes more depth and polish. Your creative ideas are strong, so continuing to refine these technical foundations will help those visions translate even more clearly on the page.",
+      "round_rationales": [
+        "It is a creative conceptual drawing, though hampered by somewhat messy coloring and inconsistent line quality.",
+        "The inclusion of color and an attempt at world-building creates a more complete scene than the simpler sketches.",
+        "This piece has an interesting, imaginative concept and some creative use of color layering, though the execution feels a bit rough.",
+        "Has an interesting imaginative concept, but is hampered by inconsistent perspective and murky color layering.",
+        "While the concept shows potential, the composition lacks depth and the linework is quite hesitant and shaky.",
+        "It presents an interesting sci-fi landscape composition, though the coloring and perspective feel a bit loose and underdeveloped.",
+        "The concept shows some creativity, but the linework is uneven and the overall composition lacks clear structure.",
+        "The colored pencil landscape has a creative sense of scale and world-building, despite the somewhat shaky execution."
+      ]
+    },
+    {
+      "id": "79ea8b8e-16ae-4cd1-99c6-ec02be978069",
+      "title": "“Street-corner Sovereign”",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1743469150/artwork/rldosv7bcy6ahyrmxgkm.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 10.0,
+      "streamlit_per_criterion": {
+        "proportion_score": 11,
+        "line_quality_score": 9,
+        "form_volume_score": 8,
+        "mood_expression_score": 12
+      },
+      "cloud_rank": 739,
+      "cloud_of": 824,
+      "cloud_percentile": 10,
+      "cloud_elo": 1289.8,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the lower tier.",
+        "subline": "Lots of growth opportunity — see the comparisons."
+      },
+      "feedback": "You have a clear talent for character design and are doing a great job capturing clothing and facial details. To take your work to the next level, focus on practicing your line confidence and studying anatomical proportions to give your drawings more depth and volume. Keep at it, as these technical skills will surely strengthen as you continue to sketch and experiment.",
+      "round_rationales": [
+        "The proportions are quite shaky and the pencil work lacks refinement or a clear sense of volume.",
+        "The proportions are quite uneven and the line quality is hesitant, resulting in a less refined final image.",
+        "This has a charming, deliberate pose, though the anatomical proportions and line weight are still clearly in the practice stage.",
+        "The drawing is quite simplistic and lacks definition in both form and proportions.",
+        "The piece showcases a decent attempt at portraiture and clothing detail, although the proportions of the face feel slightly stiff.",
+        "Despite the simple materials, the artist demonstrates a clear grasp of character design and proportion.",
+        "A charming, simple character sketch that demonstrates basic clothing and facial feature construction.",
+        "The line work here is shaky and lacks anatomical consistency, resulting in a somewhat flat overall appearance."
+      ]
+    },
+    {
+      "id": "fad7b800-e81b-4ee9-b34c-6e8f847c298d",
+      "title": "Moment in Her Hand",
+      "artist": "JoeK",
+      "image_url": "https://res.cloudinary.com/djhpg0skf/image/upload/v1745187676/artwork/lgkvcfkglf47iuqutrtt.jpg",
+      "sketch_type": "quick sketch",
+      "streamlit_avg_score": 9.5,
+      "streamlit_per_criterion": {
+        "proportion_score": 10,
+        "line_quality_score": 9,
+        "form_volume_score": 7,
+        "mood_expression_score": 12
+      },
+      "cloud_rank": 766,
+      "cloud_of": 824,
+      "cloud_percentile": 7,
+      "cloud_elo": 1263.9,
+      "not_art": false,
+      "n_ranked_rounds": 8,
+      "n_evaluated_rounds": 8,
+      "headline": {
+        "headline": "Your piece is in the lower tier.",
+        "subline": "Lots of growth opportunity — see the comparisons."
+      },
+      "feedback": "You have a wonderful talent for capturing expressive personalities and charming poses in your work. To take your art to the next level, try focusing on refining your line work and adding more definition to your proportions to help your sketches feel more complete. With a bit more attention to detail and confidence in your strokes, your clear sense of character will really shine.",
+      "round_rationales": [
+        "While the character design is cute, the line work is slightly shaky and the overall construction lacks the refinement of the other pieces.",
+        "Charming and expressive sketch that captures a sense of personality despite its simple execution on a sticky note.",
+        "The pose is charming, though the proportions and line clarity are noticeably more tentative than the top entries.",
+        "A charming pencil sketch that, although simple, clearly conveys the character's expression and pose.",
+        "The drawing is quite simplistic and lacks definition, leaving the proportions and features feeling underdeveloped.",
+        "The drawing is quite faint and lacks definition, making the pose and proportions difficult to interpret clearly.",
+        "This piece shows a clear attempt at capturing a specific pose and character design with consistent line weight and readable features.",
+        "The drawing feels unfinished and lacks definition, appearing more like a rough sketch than a completed work."
+      ]
+    }
+  ],
+  "errors": []
+}

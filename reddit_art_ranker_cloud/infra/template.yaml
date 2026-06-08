@@ -13,7 +13,7 @@ Parameters:
       Secrets Manager reference over a plaintext parameter.
   LlmModel:
     Type: String
-    Default: openai/gpt-5.4-mini
+    Default: google/gemini-3.1-flash-lite
   CorsOrigin:
     Type: String
     Default: "*"

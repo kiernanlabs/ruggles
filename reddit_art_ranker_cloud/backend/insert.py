@@ -19,7 +19,8 @@ import time
 from shared.config import (
     ELO_INITIAL,
     GROUP_SIZE,
-    INSERTION_FOCUSED_WINDOW,
+    INSERTION_FOCUSED_MIN_WINDOW,
+    INSERTION_FOCUSED_PCT,
     INSERTION_RANDOM_GROUPS,
 )
 from shared.elo import apply_group_ranking
@@ -31,11 +32,16 @@ def _pick_random_anchors(pool: list, n: int) -> list:
 
 
 def _pick_focused_anchors(pool: list, candidate_elo: float, n: int,
-                          window: int) -> list:
+                          pct: float, min_window: int) -> list:
+    """Sample `n` anchors from the closest-ELO pieces, where the neighborhood
+    spans ~`pct` percentile points of the pool (centered on the candidate). The
+    window scales with pool size so the span stays ~constant as the pool grows;
+    `min_window` is a floor so small pools still offer variety to sample from."""
     if len(pool) <= n:
         return list(pool)
+    window = max(min_window, n, round(len(pool) * pct / 100.0))
     by_distance = sorted(pool, key=lambda r: abs(float(r["elo"]) - candidate_elo))
-    neighborhood = by_distance[:max(window, n)]
+    neighborhood = by_distance[:window]
     return random.sample(neighborhood, n)
 
 
@@ -52,10 +58,13 @@ def insert(
     title: str,
     pool: list,
     jury_subject: str,
+    framing: str | None,
+    criteria: str | None,
     model: str,
     n_groups: int,
     random_groups: int = INSERTION_RANDOM_GROUPS,
-    focused_window: int = INSERTION_FOCUSED_WINDOW,
+    focused_pct: float = INSERTION_FOCUSED_PCT,
+    focused_min_window: int = INSERTION_FOCUSED_MIN_WINDOW,
     progress_cb=None,
 ) -> dict:
     """`pool` is the list of eligible anchor dicts from ddb.load_eligible_pool.
@@ -76,7 +85,7 @@ def insert(
         else:
             phase = "focused"
             anchors = _pick_focused_anchors(
-                pool, candidate_elo, GROUP_SIZE - 1, focused_window
+                pool, candidate_elo, GROUP_SIZE - 1, focused_pct, focused_min_window
             )
         random.shuffle(anchors)
 
@@ -90,7 +99,8 @@ def insert(
             local_ratings[a["piece_id"]] = float(a["elo"])
 
         try:
-            result = rank_group(image_urls, model=model, jury_subject=jury_subject)
+            result = rank_group(image_urls, model=model, jury_subject=jury_subject,
+                                framing=framing, criteria=criteria)
         except Exception as e:
             rounds.append({"round": g_idx + 1, "phase": phase, "error": str(e),
                            "anchors": [], "candidate": {}})
@@ -112,6 +122,7 @@ def insert(
                 {
                     "reddit_id": a["piece_id"],
                     "title": a.get("title"),
+                    "author": a.get("author"),
                     "permalink": a.get("permalink"),
                     "image_url": a.get("image_url"),
                     "anchor_pre_elo": float(a["elo"]),
@@ -147,6 +158,27 @@ def insert(
 
     percentile = _pctl(candidate_elo, pool_elos_static)
     final_rank = sum(1 for e in pool_elos_static if e > candidate_elo) + 1
+
+    # Did the jury ever actually score the candidate? Its ELO only moves on a
+    # round where it was ranked (i.e. not flagged not-art). If that never
+    # happened, it kept the 1500 seed and `percentile` is meaningless — the jury
+    # declined to rank it (e.g. a casual sketch / unfinished piece). Flag that so
+    # the caller can report it honestly instead of a bogus mid-pool placement.
+    ranked_rounds = sum(
+        1 for rd in rounds if rd.get("candidate", {}).get("placed_position")
+    )
+    not_art_rounds = sum(
+        1 for rd in rounds if rd.get("candidate", {}).get("flagged_not_art")
+    )
+    evaluated_rounds = sum(1 for rd in rounds if not rd.get("error"))
+    not_art = evaluated_rounds > 0 and ranked_rounds == 0
+    not_art_reason = next(
+        (rd.get("overall_rationale") for rd in rounds
+         if rd.get("candidate", {}).get("flagged_not_art")
+         and rd.get("overall_rationale")),
+        "",
+    )
+
     return {
         "candidate_id": candidate_id,
         "title": title,
@@ -154,6 +186,11 @@ def insert(
         "rank": final_rank,
         "of": len(pool_elos_static) + 1,
         "percentile": percentile,
+        "not_art": not_art,
+        "not_art_reason": not_art_reason,
+        "n_ranked_rounds": ranked_rounds,
+        "n_not_art_rounds": not_art_rounds,
+        "n_evaluated_rounds": evaluated_rounds,
         "rounds": rounds,
         "pool_elos": pool_elos_static,
     }

@@ -1,8 +1,9 @@
 """LLM jury client + group-ranking prompt (OpenRouter, OpenAI-compatible).
 
-Ported from the original module. The only functional change: the jury subject
-("watercolor paintings", "colored-pencil drawings", ...) is parameterized per
-pool instead of hard-coded, so one deployment serves multiple media.
+Ported from the original module. The jury subject, framing, and judging
+criteria are parameterized per pool (see shared/pools.py) instead of being
+hard-coded, so one deployment serves multiple media and audiences (a watercolor
+art-show jury vs. a learn-to-draw fundamentals coach).
 
 Set OPENROUTER_API_KEY in the environment (Lambda env var or local .env).
 """
@@ -22,20 +23,17 @@ try:  # dotenv is a local-dev convenience; not present/needed in Lambda
 except Exception:
     pass
 
-SYSTEM_PROMPT_TEMPLATE = """You are a juror in an art show, evaluating {subject}.
+SYSTEM_PROMPT_TEMPLATE = """{framing}
 
 You will be shown several submissions (labeled A, B, C, ...). For each one,
 first decide whether it is actually an original piece of artwork. Non-art
 submissions include: photos of supplies or palettes, contest announcements,
 PSAs, memes, screenshots, store-bought items, before/after photos used purely
-to ask a question, or reference photos shown without a finished painting.
+to ask a question, or reference photos shown without a finished piece.
 List the labels of any non-art submissions in the `not_art` field.
 
 Then rank the remaining (genuine artwork) submissions from best to worst.
-Use your own judgment, informed broadly by typical jury criteria — technique,
-composition, use of light and color, mood, originality, and overall execution
-— but do not score each criterion separately. Output a single overall ranking
-of the art submissions.
+{criteria} Output a single overall ranking of the art submissions.
 
 For each ranked piece, include a one-sentence rationale that names a concrete
 reason for its placement (e.g. "loose wash control and confident negative
@@ -50,14 +48,22 @@ Judge the artwork itself, not the documentation of it. Ignore any text,
 watermarks, signatures, or labels in the images. Do not penalize a piece for
 the photograph's quality — lighting of the snapshot, glare, perspective skew,
 low resolution, cluttered background, or whether the piece is shown flat vs.
-held up — these are properties of the photo, not the painting. Evaluate the
-painting.
+held up — these are properties of the photo, not the work itself. Evaluate the
+work itself.
 
 Every label must appear in exactly one of `not_art` or `ranking` — never
 both, never neither.
 
 Return ONLY valid JSON matching the requested schema. Do not wrap it in
 markdown code fences."""
+
+# Fallbacks used when a pool does not specify its own framing/criteria.
+DEFAULT_FRAMING = "You are a juror in an art show, evaluating {subject}."
+DEFAULT_CRITERIA = (
+    "Use your own judgment, informed broadly by typical jury criteria — "
+    "technique, composition, use of light and color, mood, originality, and "
+    "overall execution — but do not score each criterion separately."
+)
 
 MAX_PARSE_RETRIES = 2
 MAX_OUTPUT_TOKENS = 10000
@@ -144,8 +150,12 @@ def _parse_and_validate(raw: str, labels: list) -> dict:
 
 
 def rank_group(image_urls: list, model: str = LLM_MODEL, shuffle: bool = True,
-               jury_subject: str = "art submissions") -> dict:
+               jury_subject: str = "art submissions",
+               framing: str | None = None, criteria: str | None = None) -> dict:
     """Ask the LLM to rank a group of images best-to-worst, flagging non-art.
+
+    `framing` and `criteria` customize the jury prompt per pool; when omitted
+    they fall back to a generic art-show framing built from `jury_subject`.
 
     Returns the same dict shape as the original module's rank_group, so the
     callers (rank / insert) are unchanged.
@@ -163,7 +173,9 @@ def rank_group(image_urls: list, model: str = LLM_MODEL, shuffle: bool = True,
         "type": "json_schema",
         "json_schema": {"name": "group_ranking", "schema": schema, "strict": True},
     }
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(subject=jury_subject)
+    framing = framing or DEFAULT_FRAMING.format(subject=jury_subject)
+    criteria = criteria or DEFAULT_CRITERIA
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(framing=framing, criteria=criteria)
 
     client = _client()
     last_err = last_finish_reason = last_usage = None

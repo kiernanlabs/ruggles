@@ -5,6 +5,15 @@
       "Bash(grep -n \"^\\\\\\\\\\\\\\\\\\\\.\" \"C:/Users/joey3/OneDrive/Kiernanlabs/Ruggles/db_cluster-17-07-2025@20-26-32.backup\")",
       "Bash(cat requirements.txt)",
       "Bash(head -5 reddit_art_ranker/leaderboard_Watercolor.csv)"
+    ],
+    "deny": [
+      "Bash(aws*--profile default*)",
+      "Bash(aws*--profile=default*)",
+      "Bash(aws*--profile \"default\"*)"
     ]
+  },
+  "env": {
+    "AWS_PROFILE": "kiernanlabs",
+    "AWS_REGION": "us-east-1"
   }
 }

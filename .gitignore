@@ -168,3 +168,5 @@ cython_debug/
 #.idea/
 subreddits25/*
 *.zst
+report.html
+results.json

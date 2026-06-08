@@ -1,0 +1,52 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ManageRugglesExecutionRole",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:TagRole"
+      ],
+      "Resource": "arn:aws:iam::561369487018:role/ruggles-art-ranker-lambda-role"
+    },
+    {
+      "Sid": "PassOnlyRugglesRoleToLambda",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::561369487018:role/ruggles-art-ranker-lambda-role",
+      "Condition": { "StringEquals": { "iam:PassedToService": "lambda.amazonaws.com" } }
+    },
+    {
+      "Sid": "ManageRugglesLambdas",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateFunction",
+        "lambda:UpdateFunctionCode",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration",
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:TagResource"
+      ],
+      "Resource": "arn:aws:lambda:us-east-1:561369487018:function:ruggles-art-ranker-*"
+    },
+    {
+      "Sid": "ManageRugglesHttpApi",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:GET",
+        "apigateway:POST",
+        "apigateway:PATCH",
+        "apigateway:PUT",
+        "apigateway:DELETE"
+      ],
+      "Resource": "arn:aws:apigateway:us-east-1::/*"
+    }
+  ]
+}

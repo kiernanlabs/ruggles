@@ -22,12 +22,21 @@ the SAM stack already deployed (so the table + bucket exist).
 
 import argparse
 import hashlib
+import json
 import sqlite3
 import sys
 from decimal import Decimal
 
 import boto3
 import urllib.request
+
+# Load AWS creds + region from the project-root .env before any boto3 client.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    load_dotenv("../.env")
+except Exception:
+    pass
 
 from shared.config import (
     DDB_TABLE,
@@ -160,6 +169,112 @@ def publish(sqlite_path: str, subreddit: str, pool_id: str,
     print(f"Done. Pool '{pool_id}' is live with {len(eligible)} eligible pieces.")
 
 
+def _read_comparisons(sqlite_path: str, subreddit: str) -> list[dict]:
+    """Initial-ranking jury rounds (candidate_id IS NULL) for a subreddit. The
+    consumer-insertion rounds (candidate_id set) are tied to ephemeral candidates
+    and are intentionally excluded from the public scoreboard."""
+    conn = sqlite3.connect(sqlite_path)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        """
+        SELECT id, created_at, model, piece_ids_json, ranking_json, rationale,
+               per_piece_rationales_json
+        FROM comparisons
+        WHERE subreddit = ? AND candidate_id IS NULL
+        ORDER BY id
+        """,
+        (subreddit,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def publish_comparisons(sqlite_path: str, subreddit: str, pool_id: str,
+                        table_name: str) -> None:
+    """Publish the jury comparison records + per-piece rank/percentile that power
+    the Scoreboard Explorer. Does NOT touch piece images — it only adds CMP#<id>
+    items and updates rank/percentile/comparisons_summary on existing PIECE rows
+    in place, so it's safe to run after a normal image-mirroring publish.
+    """
+    pool = get_pool(pool_id)  # validates pool_id
+    pieces = _read_pool(sqlite_path, subreddit)  # non-candidate, elo DESC
+    eligible = [p for p in pieces if (p["n_not_art_flags"] or 0) < NOT_ART_EXCLUDE_AT]
+    if not eligible:
+        raise SystemExit(f"No eligible pieces for subreddit '{subreddit}'.")
+
+    # Rank + percentile over the eligible set (same convention as the consumer
+    # path: percentile = share of the pool rated lower).
+    elos = [float(p["elo"]) for p in eligible]
+    n = len(elos)
+    pct_by_id, rank_by_id = {}, {}
+    for p in eligible:
+        e = float(p["elo"])
+        pct_by_id[p["reddit_id"]] = int(round(100.0 * sum(1 for x in elos if x < e) / n))
+        rank_by_id[p["reddit_id"]] = sum(1 for x in elos if x > e) + 1
+
+    comparisons = _read_comparisons(sqlite_path, subreddit)
+    table = boto3.resource("dynamodb").Table(table_name)
+    print(f"Publishing {len(comparisons)} comparisons for pool '{pool_id}' "
+          f"({pool.label}) -> table {table_name}")
+
+    # Write comparison items + accumulate each piece's per-comparison summary.
+    summaries: dict[str, list] = {}
+    with table.batch_writer() as batch:
+        for c in comparisons:
+            cid = int(c["id"])
+            piece_ids = json.loads(c["piece_ids_json"])
+            ranking = json.loads(c["ranking_json"]) if c["ranking_json"] else []
+            per_piece = (json.loads(c["per_piece_rationales_json"])
+                         if c["per_piece_rationales_json"] else [])
+            member_pcts = [pct_by_id[pid] for pid in piece_ids if pid in pct_by_id]
+            avg_pctl = round(sum(member_pcts) / len(member_pcts), 1) if member_pcts else None
+            min_pctl = min(member_pcts) if member_pcts else None
+            max_pctl = max(member_pcts) if member_pcts else None
+
+            batch.put_item(Item={
+                "pk": f"POOL#{pool_id}",
+                "sk": f"CMP#{cid:06d}",
+                "type": "comparison",
+                "pool_id": pool_id,
+                "comparison_id": cid,
+                "piece_ids": piece_ids,
+                "ranking": ranking,
+                "rationale": c["rationale"] or "",
+                "per_piece": [{"piece_id": x.get("piece_id"),
+                               "rationale": x.get("rationale") or ""}
+                              for x in per_piece],
+                "model": c["model"] or "",
+                "created_at": c["created_at"] or "",
+            })
+            for pid in piece_ids:
+                if pid not in pct_by_id:  # excluded piece — not browsable, skip
+                    continue
+                summaries.setdefault(pid, []).append({
+                    "cmp_id": cid,
+                    "rank": (ranking.index(pid) + 1) if pid in ranking else None,
+                    "size": len(piece_ids),
+                    "avg_pctl": Decimal(str(avg_pctl)) if avg_pctl is not None else None,
+                    "min_pctl": min_pctl,
+                    "max_pctl": max_pctl,
+                })
+
+    # Update each eligible piece in place (rank is a DynamoDB reserved word).
+    for i, p in enumerate(eligible, 1):
+        pid = p["reddit_id"]
+        table.update_item(
+            Key={"pk": f"POOL#{pool_id}", "sk": f"PIECE#{pid}"},
+            UpdateExpression="SET #pct = :pct, #rnk = :rnk, #cs = :cs",
+            ExpressionAttributeNames={"#pct": "percentile", "#rnk": "rank",
+                                      "#cs": "comparisons_summary"},
+            ExpressionAttributeValues={":pct": pct_by_id[pid], ":rnk": rank_by_id[pid],
+                                       ":cs": summaries.get(pid, [])},
+        )
+        if i % 50 == 0 or i == len(eligible):
+            print(f"  updated {i}/{len(eligible)} piece rankings")
+    print(f"Done. {len(comparisons)} comparisons + {len(eligible)} rankings "
+          f"published for '{pool_id}'.")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sqlite", required=True, help="Path to reddit_rankings.db")
@@ -168,11 +283,22 @@ def main() -> None:
     ap.add_argument("--pool", required=True, help="Target cloud pool id (see shared/pools.py)")
     ap.add_argument("--mirror-images", action="store_true",
                     help="Download each image and re-host in S3 (durable, recommended)")
+    ap.add_argument("--with-comparisons", action="store_true",
+                    help="Also publish the comparisons table + per-piece rank/percentile "
+                         "(powers the Scoreboard Explorer)")
+    ap.add_argument("--comparisons-only", action="store_true",
+                    help="Publish ONLY comparisons + rank/percentile; skip the piece/image "
+                         "(re)publish. Use to add explorer data to an already-published pool.")
     ap.add_argument("--table", default=DDB_TABLE)
     ap.add_argument("--bucket", default=S3_BUCKET)
     args = ap.parse_args()
+    if args.comparisons_only:
+        publish_comparisons(args.sqlite, args.subreddit, args.pool, args.table)
+        return
     publish(args.sqlite, args.subreddit, args.pool, args.mirror_images,
             args.table, args.bucket)
+    if args.with_comparisons:
+        publish_comparisons(args.sqlite, args.subreddit, args.pool, args.table)
 
 
 if __name__ == "__main__":

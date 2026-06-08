@@ -42,51 +42,70 @@ def _pctl_of_elo(elo: float, pool_elos: list) -> int:
     return int(round(100.0 * below / len(pool_elos)))
 
 
-def comparison_tiers(result: dict, pool_elos: list) -> dict:
-    """Bucket the unique anchors the candidate faced into much_better / similar /
-    much_worse (<=3 each), each annotated with its percentile + best rationale."""
-    cand_pctl = result["percentile"]
-    seen = {}
-    for rd in result["rounds"]:
+def candidate_comparisons(result: dict, pool_elos: list, candidate_id: str,
+                          candidate_image_url: str, candidate_title: str,
+                          model: str) -> list:
+    """Turn each insertion round into a self-contained comparison record, shaped
+    like the published pool comparisons the Scoreboard Explorer renders: the
+    candidate + the anchors it faced, each with image, rank-in-group, the round's
+    rationale, and its standing in the overall pool. Error rounds are skipped.
+
+    Self-contained (members embedded) because the candidate has no PIECE row to
+    join against, and so the detail endpoint is a single Get with no fan-out.
+    """
+    out = []
+    for rd in result.get("rounds", []):
+        if rd.get("error"):
+            continue
+        cand = rd.get("candidate", {})
+        cand_elo_after = rd.get("candidate_elo_after")
+        members = [{
+            "piece_id": candidate_id,
+            "is_candidate": True,
+            "title": candidate_title or "Your piece",
+            "author": None,
+            "image_url": candidate_image_url,
+            "permalink": None,
+            "rank_in_set": cand.get("placed_position"),
+            "flagged_not_art": bool(cand.get("flagged_not_art")),
+            "overall_percentile": (_pctl_of_elo(cand_elo_after, pool_elos)
+                                   if cand_elo_after is not None else None),
+            "overall_rank": None,
+            "rationale": cand.get("rationale_this_round") or "",
+        }]
         for a in rd.get("anchors", []):
-            if a.get("flagged_not_art"):
-                continue
-            aid = a["reddit_id"]
-            if aid not in seen:
-                seen[aid] = {**a, "round": rd["round"], "phase": rd["phase"]}
-    anchors = list(seen.values())
-    for a in anchors:
-        a["percentile"] = _pctl_of_elo(a["anchor_pre_elo"], pool_elos)
-
-    much_better = sorted(
-        [a for a in anchors if a["percentile"] >= min(85, cand_pctl + 30)],
-        key=lambda a: -a["percentile"],
-    )[:3]
-    much_worse = sorted(
-        [a for a in anchors if a["percentile"] <= max(15, cand_pctl - 30)],
-        key=lambda a: a["percentile"],
-    )[:3]
-    chosen = {x["reddit_id"] for x in much_better + much_worse}
-    similar = sorted(
-        [a for a in anchors
-         if a["reddit_id"] not in chosen and abs(a["percentile"] - cand_pctl) <= 15],
-        key=lambda a: abs(a["percentile"] - cand_pctl),
-    )[:3]
-
-    def _slim(a):
-        return {
-            "title": a.get("title") or a["reddit_id"],
-            "permalink": a.get("permalink"),
-            "image_url": a.get("image_url"),
-            "percentile": a["percentile"],
-            "rationale": a.get("rationale_this_round") or "",
-        }
-
-    return {
-        "much_better": [_slim(a) for a in much_better],
-        "similar": [_slim(a) for a in similar],
-        "much_worse": [_slim(a) for a in much_worse],
-    }
+            members.append({
+                "piece_id": a.get("reddit_id"),
+                "is_candidate": False,
+                "title": a.get("title") or a.get("reddit_id"),
+                "author": a.get("author"),
+                "image_url": a.get("image_url"),
+                "permalink": a.get("permalink"),
+                "rank_in_set": a.get("placed_position"),
+                "flagged_not_art": bool(a.get("flagged_not_art")),
+                "overall_percentile": _pctl_of_elo(float(a.get("anchor_pre_elo", 0)),
+                                                   pool_elos),
+                "overall_rank": a.get("anchor_pre_rank"),
+                "rationale": a.get("rationale_this_round") or "",
+            })
+        # Group ranking order: ranked pieces first, not-art / unranked last.
+        members.sort(key=lambda m: (m["rank_in_set"] is None, m["rank_in_set"] or 0))
+        pcts = [m["overall_percentile"] for m in members
+                if m["overall_percentile"] is not None]
+        out.append({
+            "comparison_id": rd["round"],
+            "phase": rd.get("phase"),
+            "size": len(members),
+            "model": model,
+            "rationale": rd.get("overall_rationale") or "",
+            "candidate_rank": cand.get("placed_position"),
+            "candidate_flagged_not_art": bool(cand.get("flagged_not_art")),
+            "avg_pctl": round(sum(pcts) / len(pcts), 1) if pcts else None,
+            "min_pctl": min(pcts) if pcts else None,
+            "max_pctl": max(pcts) if pcts else None,
+            "members": members,
+        })
+    return out
 
 
 def verdict_headline(pctl: int) -> dict:

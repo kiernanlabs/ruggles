@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A work of art · Mini Art Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;680&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="dot"></span> Mini Art Salon</a>
+    <div class="nav-links">
+      <a href="index.html">Rank yours</a>
+    </div>
+  </nav>
+
+  <div id="root"><p class="muted">Loading…</p></div>
+
+  <footer class="foot"><a href="index.html">Rank your own art →</a></footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+const API_URL = window.API_URL || "https://gt5jcvia2l.execute-api.us-east-1.amazonaws.com";
+const POOL = "learntodraw";
+const $ = (id) => document.getElementById(id);
+const PIECE = new URLSearchParams(location.search).get("id");
+let piece = null;
+
+async function load() {
+  if (!PIECE) {
+    $("root").innerHTML = `<p class="err">No piece selected.</p>`;
+    return;
+  }
+  try {
+    piece = await apiJson(`${API_URL}/pools/${POOL}/pieces/${PIECE}`);
+    render();
+  } catch (e) {
+    $("root").innerHTML = `<p class="err">Couldn’t load this piece: ${esc(e.message)}</p>`;
+  }
+}
+
+function ordinalSuffix(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+function render() {
+  const p = piece;
+  const summary = p.comparisons_summary || [];
+  $("root").innerHTML = `
+    <div class="panel">
+      <div class="result-hero">
+        <img id="hero-img" class="art zoomable" src="${p.image_url || ""}" alt="">
+        <div class="body">
+          <div class="headline">A piece from the salon</div>
+          <div class="score">${p.percentile}<sup>${ordinalSuffix(p.percentile)}</sup></div>
+          <div class="score-label">percentile in the salon</div>
+          <div class="meter"><div class="grad"></div>
+            <div class="mark" style="left:calc(${p.percentile}% - 2px)"></div></div>
+          <div class="stats">
+            <div class="stat"><div class="k">Percentile</div><div class="v">${ordinal(p.percentile)}</div></div>
+            <div class="stat"><div class="k">Rounds judged</div><div class="v">${summary.length}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-h">How the jury saw it <span class="muted">· ${summary.length} rounds</span></h2>
+      <p class="muted">Each row is one round this piece was judged in. The bar shows the
+        percentile range of that group; the marker is where this piece sat. The note is
+        what the jury said about this piece that round — open details to read the rest of the group.</p>
+      <div class="cmp-list">${summary.map(c => `
+        <div class="cmp-entry">
+          <div class="cmp-row">
+            <span class="info">Round <b>${c.cmp_id}</b> · placed <b>${c.rank ?? "—"}/${c.size}</b></span>
+            ${rangeBar(c.min_pctl, c.max_pctl, p.percentile, c.avg_pctl)}
+            <a href="#" data-cmp="${c.cmp_id}">details ›</a>
+          </div>
+          <div class="cmp-rationale" data-rat="${c.cmp_id}"></div>
+        </div>`).join("")}</div>
+    </div>`;
+
+  $("hero-img").addEventListener("click", () => openLightbox(p.image_url,
+    `<b>a salon piece</b><br><span class="pct">${ordinal(p.percentile)}</span> percentile in the salon`));
+  document.querySelectorAll('a[data-cmp]').forEach(a =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      openComparison(`${API_URL}/pools/${POOL}/comparisons/${a.dataset.cmp}`,
+                     { pool: POOL, currentPieceId: PIECE });
+    }));
+  loadRationales(summary);
+}
+
+// Pull each round's note for THIS piece and show it inline. Uses the cached
+// fetchComparison so opening "details" afterward is instant. The other pieces'
+// notes still live behind the details modal.
+function loadRationales(summary) {
+  summary.forEach(async (c) => {
+    const el = document.querySelector(`.cmp-rationale[data-rat="${c.cmp_id}"]`);
+    if (!el) return;
+    try {
+      const detail = await fetchComparison(`${API_URL}/pools/${POOL}/comparisons/${c.cmp_id}`);
+      const me = (detail.members || []).find((m) => m.piece_id === PIECE);
+      if (me && me.rationale) el.innerHTML = `“${escapeHtml(me.rationale)}”`;
+      else el.remove();
+    } catch (_) { el.remove(); }
+  });
+}
+
+load();
+</script>
+</body>
+</html>

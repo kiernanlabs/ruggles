@@ -15,7 +15,7 @@ import time
 from decimal import Decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 
 from shared.config import DDB_TABLE, NOT_ART_EXCLUDE_AT, SUBMISSION_TTL_SECONDS
 
@@ -53,15 +53,62 @@ def _nums(obj):
 
 # ── Pools / pieces ──────────────────────────────────────────────────────────
 def list_pools() -> list[dict]:
-    """All pool-meta items (one per pool). Used by GET /pools."""
-    resp = _t().scan(
-        FilterExpression=Key("sk").eq("META"),
+    """All pool-meta items (one per pool). Used by GET /pools.
+
+    Pool metas and job records *both* use sk="META" (and both carry a pool_id),
+    so filtering on sk alone sweeps jobs into the pool list, where a job can
+    clobber its pool's real meta in the caller's pool_id->item map. The pk
+    prefix is the discriminator: pool metas live under POOL#<id>, jobs under
+    JOB#<id>. Paginate so the list stays complete as the table grows.
+    """
+    items, kwargs = [], dict(
+        FilterExpression=Attr("pk").begins_with("POOL#") & Attr("sk").eq("META"),
     )
-    return _floats(resp.get("Items", []))
+    while True:
+        resp = _t().scan(**kwargs)
+        items.extend(resp.get("Items", []))
+        if "LastEvaluatedKey" not in resp:
+            break
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+    return _floats(items)
 
 
 def get_pool_meta(pool_id: str) -> dict | None:
     resp = _t().get_item(Key={"pk": f"POOL#{pool_id}", "sk": "META"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def get_comparison(pool_id: str, cmp_id) -> dict | None:
+    """One jury comparison record (group of pieces + ranking + rationales).
+    Written by local/publish.py's publish_comparisons."""
+    try:
+        cid = int(cmp_id)
+    except (TypeError, ValueError):
+        return None
+    resp = _t().get_item(Key={"pk": f"POOL#{pool_id}", "sk": f"CMP#{cid:06d}"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def batch_get_pieces(pool_id: str, piece_ids: list) -> list[dict]:
+    """Fetch specific pieces by id (≤5 per comparison). Used to enrich a
+    comparison's members with image_url/title/percentile/rank.
+
+    Uses point GetItems rather than BatchGetItem: the set is tiny, and the
+    Lambda role grants GetItem but not BatchGetItem (see infra/iam/role-policy)."""
+    out = []
+    for pid in dict.fromkeys(piece_ids or []):
+        resp = _t().get_item(Key={"pk": f"POOL#{pool_id}", "sk": f"PIECE#{pid}"})
+        item = resp.get("Item")
+        if item:
+            out.append(item)
+    return _floats(out)
+
+
+def get_piece(pool_id: str, piece_id: str) -> dict | None:
+    """One published piece by id (for the dedicated piece page)."""
+    resp = _t().get_item(Key={"pk": f"POOL#{pool_id}", "sk": f"PIECE#{piece_id}"})
     item = resp.get("Item")
     return _floats(item) if item else None
 
@@ -117,5 +164,38 @@ def update_job(job_id: str, **fields) -> None:
 
 def get_job(job_id: str) -> dict | None:
     resp = _t().get_item(Key={"pk": f"JOB#{job_id}", "sk": "META"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def put_job_comparisons(job_id: str, pool_id: str, comparisons: list,
+                        ttl_seconds: int = SUBMISSION_TTL_SECONDS) -> None:
+    """Persist a submission's per-round jury comparisons as CMP#<round> items
+    under the job's partition (same shape as the published pool comparisons, but
+    job-scoped so they don't pollute the public scoreboard and expire with the
+    job's TTL)."""
+    if not comparisons:
+        return
+    ttl = int(time.time()) + ttl_seconds
+    with _t().batch_writer() as batch:
+        for c in comparisons:
+            batch.put_item(Item=_nums({
+                "pk": f"JOB#{job_id}",
+                "sk": f"CMP#{int(c['comparison_id']):06d}",
+                "type": "comparison",
+                "job_id": job_id,
+                "pool_id": pool_id,
+                "ttl": ttl,
+                **c,
+            }))
+
+
+def get_job_comparison(job_id: str, cmp_id) -> dict | None:
+    """One round's comparison detail for a submission."""
+    try:
+        cid = int(cmp_id)
+    except (TypeError, ValueError):
+        return None
+    resp = _t().get_item(Key={"pk": f"JOB#{job_id}", "sk": f"CMP#{cid:06d}"})
     item = resp.get("Item")
     return _floats(item) if item else None

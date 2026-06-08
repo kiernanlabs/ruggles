@@ -1,0 +1,764 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Streamlit sample × cloud learntodraw ranking</title>
+<style>
+  :root{--ink:#1d2127;--muted:#6b7280;--line:#e5e7eb;--accent:#2f7;}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);margin:0;background:#fafafa;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:24px;margin:0 0 4px}
+  .lede{color:var(--muted);margin:0 0 24px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:20px 24px;margin:0 0 28px}
+  .summary{display:flex;flex-wrap:wrap;gap:24px;margin:0 0 8px}
+  .summary div{font-size:13px;color:var(--muted)}
+  .summary b{display:block;font-size:20px;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;
+    letter-spacing:.04em}
+  td.ttl{font-weight:600} .muted{color:var(--muted)}
+  .corr{font-size:15px;margin:0 0 6px} .interp{color:var(--muted);font-size:14px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+    gap:20px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;display:flex;flex-direction:column}
+  .card .img{background:#f3f4f6;aspect-ratio:4/3;overflow:hidden;display:flex;
+    align-items:center;justify-content:center}
+  .card .img img{width:100%;height:100%;object-fit:cover}
+  .card .body{padding:14px 16px 16px}
+  .card h3{margin:0;font-size:16px}
+  .card .sub{color:var(--muted);font-size:12px;margin:2px 0 10px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 12px}
+  .stat{background:#f7f8fa;border-radius:8px;padding:6px 8px;text-align:center}
+  .stat .k{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.03em}
+  .stat .v{font-size:18px;font-weight:700} .stat small{font-size:11px;color:var(--muted);font-weight:400}
+  .verdict{font-size:13px;margin:0 0 10px}
+  .fb h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted)}
+  .fb p{margin:0;font-size:14px}
+  details{margin-top:10px;font-size:13px} summary{cursor:pointer;color:var(--muted)}
+  ul.rats,ul.crit{margin:8px 0 0;padding-left:18px} ul.rats li{margin:3px 0}
+  ul.crit{list-style:none;padding:0} ul.crit li{display:flex;justify-content:space-between;
+    border-bottom:1px solid var(--line);padding:3px 0}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;margin:0 0 8px}
+  .badge.na{background:#fde8e8;color:#9b1c1c}
+  .errs{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px 20px}
+</style></head><body><div class="wrap">
+  <h1>Streamlit artwork sample &times; cloud <code>learntodraw</code> ranking</h1>
+  <p class="lede">20 randomly sampled pieces (seed 42)
+    from the original Ruggles Streamlit database, each run through the standard
+    cloud insertion route &mdash; 8 jury rounds on
+    <code>google/gemini-3.1-flash-lite</code> against 823 learntodraw
+    anchors.</p>
+
+  <div class="panel"><div class="summary">
+    <div><b>20</b>pieces sampled</div>
+    <div><b>20</b>ranked</div>
+    <div><b>823</b>pool anchors</div>
+    <div><b>8</b>jury rounds each</div>
+    <div><b>178.3s</b>total runtime</div>
+  </div></div>
+
+  <div class="panel">
+    <h2 style="margin:0 0 12px;font-size:18px">Streamlit GPT score vs. cloud jury percentile</h2>
+    <p class="corr">Pearson r = <b>+0.77</b>, Spearman ρ = <b>+0.76</b> (n = 20 scored pieces)</p>
+    <p class="interp">The two methods show a strong positive rank relationship. The Streamlit score is an absolute per-criterion GPT rubric (1–20, judged in isolation); the cloud percentile is a <em>relative</em> standing earned by head-to-head jury comparisons against 823 learntodraw pieces. Divergence is expected where a piece scores well on the rubric but competes against a tough peer pool (or vice-versa).</p>
+    <svg viewBox="0 0 620 420" width="100%" style="max-width:620px;font-family:inherit"><line x1="60" y1="360" x2="560" y2="360" stroke="#999"/><line x1="60" y1="60" x2="60" y2="360" stroke="#999"/><line x1="60.0" y1="60" x2="60.0" y2="360" stroke="#eee"/><text x="60.0" y="378" font-size="11" text-anchor="middle" fill="#666">0</text><line x1="185.0" y1="60" x2="185.0" y2="360" stroke="#eee"/><text x="185.0" y="378" font-size="11" text-anchor="middle" fill="#666">5</text><line x1="310.0" y1="60" x2="310.0" y2="360" stroke="#eee"/><text x="310.0" y="378" font-size="11" text-anchor="middle" fill="#666">10</text><line x1="435.0" y1="60" x2="435.0" y2="360" stroke="#eee"/><text x="435.0" y="378" font-size="11" text-anchor="middle" fill="#666">15</text><line x1="560.0" y1="60" x2="560.0" y2="360" stroke="#eee"/><text x="560.0" y="378" font-size="11" text-anchor="middle" fill="#666">20</text><line x1="60" y1="360.0" x2="560" y2="360.0" stroke="#eee"/><text x="50" y="364.0" font-size="11" text-anchor="end" fill="#666">0</text><line x1="60" y1="300.0" x2="560" y2="300.0" stroke="#eee"/><text x="50" y="304.0" font-size="11" text-anchor="end" fill="#666">20</text><line x1="60" y1="240.0" x2="560" y2="240.0" stroke="#eee"/><text x="50" y="244.0" font-size="11" text-anchor="end" fill="#666">40</text><line x1="60" y1="180.0" x2="560" y2="180.0" stroke="#eee"/><text x="50" y="184.0" font-size="11" text-anchor="end" fill="#666">60</text><line x1="60" y1="120.0" x2="560" y2="120.0" stroke="#eee"/><text x="50" y="124.0" font-size="11" text-anchor="end" fill="#666">80</text><line x1="60" y1="60.0" x2="560" y2="60.0" stroke="#eee"/><text x="50" y="64.0" font-size="11" text-anchor="end" fill="#666">100</text><text x="310.0" y="408" font-size="13" text-anchor="middle" fill="#333">Streamlit aggregate GPT score (avg of criteria, 1–20)</text><text x="18" y="210.0" font-size="13" text-anchor="middle" fill="#333" transform="rotate(-90 18 210.0)">Cloud jury percentile (learntodraw)</text><circle cx="472.5" cy="63.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>“Whirlwind of Blades – Jett in Motion” — st 16.5, pctl 99</title></circle><circle cx="403.8" cy="186.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Gaze in Profile Rest — st 13.75, pctl 58</title></circle><circle cx="372.5" cy="195.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Warm Hugs on a Sticky Note — st 12.5, pctl 55</title></circle><circle cx="413.0" cy="201.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Emerald Gaze in Half-Light — st 14.12, pctl 53</title></circle><circle cx="332.0" cy="201.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>The Curious Side-Glance — st 10.88, pctl 53</title></circle><circle cx="403.8" cy="210.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Reclining Figure on an Armchair — st 13.75, pctl 50</title></circle><circle cx="403.8" cy="231.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Bite by the Window — st 13.75, pctl 43</title></circle><circle cx="378.8" cy="249.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Lifted Laughter Under a Passing Cloud — st 12.75, pctl 37</title></circle><circle cx="378.8" cy="252.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Smile on the Ledge — st 12.75, pctl 36</title></circle><circle cx="360.0" cy="255.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Young Karateka in Training — st 12.0, pctl 35</title></circle><circle cx="410.0" cy="261.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Smiles: Two Child Portrait Studies — st 14.0, pctl 33</title></circle><circle cx="353.8" cy="276.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Figure with Companion Studies — st 11.75, pctl 28</title></circle><circle cx="397.5" cy="276.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Blue in the Winter Woods — st 13.5, pctl 28</title></circle><circle cx="322.5" cy="288.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>“Ember Crown Gambit” — st 10.5, pctl 24</title></circle><circle cx="372.5" cy="294.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Confidence in a Pink Coat — st 12.5, pctl 22</title></circle><circle cx="253.8" cy="303.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Folded-Arms Smile — st 7.75, pctl 19</title></circle><circle cx="303.8" cy="303.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Quiet Resolve — st 9.75, pctl 19</title></circle><circle cx="322.5" cy="306.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>“Tethered Launch Across Shattered Isles” — st 10.5, pctl 18</title></circle><circle cx="310.0" cy="330.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>“Street-corner Sovereign” — st 10.0, pctl 10</title></circle><circle cx="297.5" cy="339.0" r="6" fill="#4a7" fill-opacity="0.65" stroke="#275" stroke-width="1"><title>Moment in Her Hand — st 9.5, pctl 7</title></circle></svg>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin:0 0 12px;font-size:18px">Ranking table (best cloud rank first)</h2>
+    <table><thead><tr>
+      <th>Cloud rank</th><th>Percentile</th><th>Streamlit avg</th>
+      <th>Title</th><th>Artist</th><th>ELO</th>
+    </tr></thead><tbody><tr>
+          <td>10<span class="muted">/824</span></td>
+          <td>99</td>
+          <td>16.5/20</td>
+          <td class="ttl">“Whirlwind of Blades – Jett in Motion”</td>
+          <td class="muted">Riot</td>
+          <td class="muted">1847.6</td>
+        </tr><tr>
+          <td>350<span class="muted">/824</span></td>
+          <td>58</td>
+          <td>13.75/20</td>
+          <td class="ttl">Quiet Gaze in Profile Rest</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1540.5</td>
+        </tr><tr>
+          <td>373<span class="muted">/824</span></td>
+          <td>55</td>
+          <td>12.5/20</td>
+          <td class="ttl">Warm Hugs on a Sticky Note</td>
+          <td class="muted">Joel</td>
+          <td class="muted">1528.1</td>
+        </tr><tr>
+          <td>384<span class="muted">/824</span></td>
+          <td>53</td>
+          <td>14.12/20</td>
+          <td class="ttl">Emerald Gaze in Half-Light</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1520.9</td>
+        </tr><tr>
+          <td>389<span class="muted">/824</span></td>
+          <td>53</td>
+          <td>10.88/20</td>
+          <td class="ttl">The Curious Side-Glance</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1516.8</td>
+        </tr><tr>
+          <td>413<span class="muted">/824</span></td>
+          <td>50</td>
+          <td>13.75/20</td>
+          <td class="ttl">Reclining Figure on an Armchair</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1505.8</td>
+        </tr><tr>
+          <td>471<span class="muted">/824</span></td>
+          <td>43</td>
+          <td>13.75/20</td>
+          <td class="ttl">Quiet Bite by the Window</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1474.8</td>
+        </tr><tr>
+          <td>518<span class="muted">/824</span></td>
+          <td>37</td>
+          <td>12.75/20</td>
+          <td class="ttl">Lifted Laughter Under a Passing Cloud</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1446.7</td>
+        </tr><tr>
+          <td>526<span class="muted">/824</span></td>
+          <td>36</td>
+          <td>12.75/20</td>
+          <td class="ttl">Quiet Smile on the Ledge</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1442.6</td>
+        </tr><tr>
+          <td>534<span class="muted">/824</span></td>
+          <td>35</td>
+          <td>12.0/20</td>
+          <td class="ttl">Young Karateka in Training</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1438.4</td>
+        </tr><tr>
+          <td>551<span class="muted">/824</span></td>
+          <td>33</td>
+          <td>14.0/20</td>
+          <td class="ttl">Quiet Smiles: Two Child Portrait Studies</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1425.9</td>
+        </tr><tr>
+          <td>590<span class="muted">/824</span></td>
+          <td>28</td>
+          <td>11.75/20</td>
+          <td class="ttl">Quiet Figure with Companion Studies</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1402.8</td>
+        </tr><tr>
+          <td>593<span class="muted">/824</span></td>
+          <td>28</td>
+          <td>13.5/20</td>
+          <td class="ttl">Blue in the Winter Woods</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1397.7</td>
+        </tr><tr>
+          <td>627<span class="muted">/824</span></td>
+          <td>24</td>
+          <td>10.5/20</td>
+          <td class="ttl">“Ember Crown Gambit”</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1376.2</td>
+        </tr><tr>
+          <td>646<span class="muted">/824</span></td>
+          <td>22</td>
+          <td>12.5/20</td>
+          <td class="ttl">Quiet Confidence in a Pink Coat</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1364.9</td>
+        </tr><tr>
+          <td>665<span class="muted">/824</span></td>
+          <td>19</td>
+          <td>7.75/20</td>
+          <td class="ttl">Folded-Arms Smile</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1353.1</td>
+        </tr><tr>
+          <td>666<span class="muted">/824</span></td>
+          <td>19</td>
+          <td>9.75/20</td>
+          <td class="ttl">Quiet Resolve</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1351.7</td>
+        </tr><tr>
+          <td>674<span class="muted">/824</span></td>
+          <td>18</td>
+          <td>10.5/20</td>
+          <td class="ttl">“Tethered Launch Across Shattered Isles”</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1345.2</td>
+        </tr><tr>
+          <td>739<span class="muted">/824</span></td>
+          <td>10</td>
+          <td>10.0/20</td>
+          <td class="ttl">“Street-corner Sovereign”</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1289.8</td>
+        </tr><tr>
+          <td>766<span class="muted">/824</span></td>
+          <td>7</td>
+          <td>9.5/20</td>
+          <td class="ttl">Moment in Her Hand</td>
+          <td class="muted">JoeK</td>
+          <td class="muted">1263.9</td>
+        </tr></tbody></table>
+  </div>
+
+  
+
+  <h2 style="font-size:18px;margin:0 0 16px">Per-piece results</h2>
+  <div class="cards">
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1745755224/artwork/nxonksstbwcl2vh3geei.png" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1745755224/artwork/nxonksstbwcl2vh3geei.png" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>“Whirlwind of Blades – Jett in Motion”</h3>
+            <div class="sub">by Riot · full realism</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">10<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">99<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1847.6</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">16.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the top tier.</b>
+              Stronger craft than the vast majority of submissions.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your work consistently stands out for its professional finish, particularly in your dynamic character poses and confident, clean linework. You have clearly mastered the fundamentals of strong character design and composition, resulting in highly polished and appealing illustrations. To continue pushing your craft, consider experimenting with more complex narrative elements or varied lighting techniques to add even more depth to your already skillful technical execution.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>High-level rendering and dynamic composition make this piece stand out as the most accomplished work.</li><li>Dynamic pose and professional line work show a high level of technical competency and clear character design.</li><li>Strong character design and dynamic posing with clean, confident line work.</li><li>High level of technical finish with dynamic composition and professional-grade character design.</li><li>High-quality character illustration with dynamic composition and professional-level line work.</li><li>This piece features highly dynamic posing, confident line work, and an appealing stylized character design.</li><li>This piece has excellent professional polish, dynamic composition, and sophisticated linework.</li><li>Strong character design and dynamic posing with professional color application.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>17</b></li><li><span>Line Quality</span><b>18</b></li><li><span>Form Volume</span><b>17</b></li><li><span>Mood Expression</span><b>16</b></li><li><span>Value Light</span><b>15</b></li><li><span>Detail Texture</span><b>16</b></li><li><span>Composition Perspective</span><b>17</b></li><li><span>Overall Realism</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561820/artwork/cuidw2osdk9ueyopw1jn.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561820/artwork/cuidw2osdk9ueyopw1jn.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Gaze in Profile Rest</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">350<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">58<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1540.5</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">13.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is above the median.</b>
+              Better than more than half of the submissions.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a strong grasp of facial proportions and have clearly put a lot of focused effort into using shading to create depth and structure. To take your work to the next level, try to refine your blending technique and watch your pressure to ensure the shading feels smooth rather than heavy-handed. You are definitely on the right track, so keep practicing these details to bring more polish to your future portraits.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>This piece shows the most successful integration of shadow, form, and composition of the portrait studies presented.</li><li>While the proportions are stylized, the shading and facial features show a consistent effort to create a structured portrait.</li><li>While the proportions are a bit stylized, the attempt at facial shading shows an effort to give the drawing depth.</li><li>While the proportions are a bit stiff, the shading shows a good attempt at facial structure and volume.</li><li>This portrait shows a good grasp of facial proportions and effective shading, resulting in a believable and engaging study.</li><li>While the portrait shows a good grasp of facial proportions and basic shading, the rendering feels a bit heavy-handed compared to the other works.</li><li>Shows a good attempt at portrait shading and facial proportion, though the technique feels slightly unpolished.</li><li>A decent portrait with a clear sense of proportions and light mapping, though the shading on the neck feels somewhat rushed.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>14</b></li><li><span>Line Quality</span><b>13</b></li><li><span>Form Volume</span><b>12</b></li><li><span>Mood Expression</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1744852587/artwork/uhvluqwehvmbu066nty7.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1744852587/artwork/uhvluqwehvmbu066nty7.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Warm Hugs on a Sticky Note</h3>
+            <div class="sub">by Joel · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">373<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">55<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1528.1</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">12.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is above the median.</b>
+              Better than more than half of the submissions.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a great eye for character likeness, and your ability to capture the unique essence of your subjects in a clean, consistent style really shines through. To take your work to the next level, try experimenting with more varied line weights and added shading to give your illustrations more depth and a less &quot;sketch-like&quot; feel. You clearly have a strong foundation, so keep building on those technical details to turn your charming character studies into more polished, finished pieces.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The lines are clean and accurately capture the likeness of the characters, feeling like a successful study.</li><li>It is a charming and recognizable sketch, though the likeness is slightly stiff and the line quality is thin.</li><li>This is a clean and competent character sketch that captures the essence of the subjects well.</li><li>The character likeness is recognizable, though the execution remains simple and developmental.</li><li>The linework is simplistic and lacks depth, appearing more like a casual sketch than a polished piece.</li><li>The artist demonstrates a strong grasp of character likeness and clean, consistent line quality.</li><li>This piece displays excellent character likenesses and clean, confident line work that captures the expressive style of the subjects.</li><li>While the character likenesses are pleasant and recognizable, the technical execution is somewhat simple.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>12</b></li><li><span>Form Volume</span><b>10</b></li><li><span>Mood Expression</span><b>15</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562816/artwork/b4twuyomrtjgmv5dpqc7.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562816/artwork/b4twuyomrtjgmv5dpqc7.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Emerald Gaze in Half-Light</h3>
+            <div class="sub">by JoeK · full realism</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">384<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">53<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1520.9</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">14.12<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece sits around the middle.</b>
+              Comparable craft to a typical submission.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a real talent for using color and high-contrast lighting to create a compelling, dramatic atmosphere in your portraits. While your eye for mood is a major strength, you could elevate your work further by focusing on smoother shading transitions and refining your understanding of facial anatomy and proportions. With a little more attention to blending and structure, your expressive style will become even more polished and impactful.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>While the shading is a bit bold, the drawing effectively uses color and high-contrast light to create a dramatic mood.</li><li>The drawing shows an attempt at complex shading, but the transitions are choppy and the facial proportions feel a bit unbalanced.</li><li>The eyes are striking, but the heavy, uneven shading on the face struggles with anatomy and form.</li><li>While the dramatic lighting is a good attempt, the final result feels unresolved due to heavy, inconsistent shading on the face.</li><li>This piece demonstrates a sophisticated use of color and shading that gives the portrait a compelling, atmospheric quality.</li><li>While ambitious in its use of color, the drawing is hindered by unclear anatomical structure and heavy-handed application of medium.</li><li>The portrait demonstrates a sophisticated use of colored pencil blending and shading that gives the face a realistic and dimensional quality.</li><li>The emotive shading and dramatic lighting on the face create a compelling, moody atmosphere.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>14</b></li><li><span>Form Volume</span><b>14</b></li><li><span>Mood Expression</span><b>16</b></li><li><span>Value Light</span><b>15</b></li><li><span>Detail Texture</span><b>13</b></li><li><span>Composition Perspective</span><b>14</b></li><li><span>Overall Realism</span><b>14</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1747184849/artwork/qvwih6xpd6wpdyceuckn.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1747184849/artwork/qvwih6xpd6wpdyceuckn.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>The Curious Side-Glance</h3>
+            <div class="sub">by JoeK · full realism</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">389<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">53<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1516.8</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">10.88<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece sits around the middle.</b>
+              Comparable craft to a typical submission.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a great eye for color and shading, and you are clearly successful at capturing a recognizable likeness in your portraits. To take your work to the next level, focus on loosening up your technique to address some of the current stiffness and practice refining your facial proportions. You have a solid foundation, so keep experimenting and trust your instincts as you balance your expressive style with more precise anatomy.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>While the proportions are a bit distorted, the artist successfully experiments with color and value on the face.</li><li>It captures a good likeness with expressive shading, though the proportions feel slightly unrefined.</li><li>There is a solid attempt at portraiture with effective use of shading and color to capture a recognizable likeness.</li><li>It shows recognizable likeness and effort in shading, though the facial proportions and blending appear somewhat stiff.</li><li>The portrait has a decent attempt at capturing a facial expression, though the shading feels a bit heavy-handed in certain areas.</li><li>The portrait captures a recognizable likeness but suffers from uneven shading and some anatomical stiffness.</li><li>Features expressive shading and a decent attempt at capturing facial features, though it feels a bit unrefined in its execution.</li><li>While the proportions are a bit off, the shading and use of color create a more finished and atmospheric look than the lighter sketches.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>11</b></li><li><span>Line Quality</span><b>12</b></li><li><span>Form Volume</span><b>10</b></li><li><span>Mood Expression</span><b>14</b></li><li><span>Value Light</span><b>9</b></li><li><span>Detail Texture</span><b>8</b></li><li><span>Composition Perspective</span><b>12</b></li><li><span>Overall Realism</span><b>11</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561724/artwork/jf6vkvowhfaj6tbvsnxb.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561724/artwork/jf6vkvowhfaj6tbvsnxb.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Reclining Figure on an Armchair</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">413<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">50<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1505.8</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">13.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece sits around the middle.</b>
+              Comparable craft to a typical submission.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a real gift for capturing natural, relatable moments that feel authentic and engaging to the viewer. While your ability to tell a story through a pose is strong, you can improve your work by practicing anatomical accuracy and using more confident, deliberate line work to give your figures more presence. Keep leaning into your talent for narrative, and try to balance that charm with a bit more structural precision next time.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The drawing exhibits a clear observational effort in capturing a natural pose and composition.</li><li>A charming and readable study of a figure in rest, despite some proportional inconsistencies.</li><li>A charming and relatable sketch that successfully captures a quiet, character-focused moment.</li><li>While the anatomy is a bit simplified, it successfully conveys a specific, relatable scene with intentional line work.</li><li>While the composition is clear, the figure lacks anatomical definition and the lines feel somewhat tentative.</li><li>It captures a specific, relatable moment with decent observation of form, even if the proportions are somewhat stylized.</li><li>There is a nice sense of weight and rest in the figure, though the line work is a bit hesitant.</li><li>There is a compelling sense of narrative and figure placement in this piece that makes the scene feel very natural and engaging.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>14</b></li><li><span>Form Volume</span><b>12</b></li><li><span>Mood Expression</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562070/artwork/jahkqatmjni9xkqeocws.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562070/artwork/jahkqatmjni9xkqeocws.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Bite by the Window</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">471<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">43<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1474.8</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">13.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece sits around the middle.</b>
+              Comparable craft to a typical submission.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your work has a wonderful ability to capture quiet, narrative moods through your delicate line work and thoughtful use of color. To elevate your pieces further, try focusing on refining your anatomical proportions and building more confidence in your strokes to give your subjects a more solid, finished presence. You have a great eye for atmosphere, so keep leaning into those observational strengths as you continue to develop your technical precision.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>It captures a quiet, contemplative scene with good anatomical awareness despite the sparse use of color.</li><li>This drawing has some appealing elements but ultimately suffers from disproportionate anatomy and a lack of depth.</li><li>The drawing feels structurally incomplete with shaky line work and underdeveloped coloring.</li><li>While the composition is clear, the linework feels hesitant and the color application is somewhat sparse.</li><li>The drawing represents a complete action scene, though the anatomical proportions and outlines appear a bit rigid.</li><li>The colored pencil work captures a lovely, authentic atmosphere with expressive lines and good observation.</li><li>The soft use of color and gentle lines create a very pleasing, atmospheric, and finished look.</li><li>The delicate line work and selective use of color create a charming, observational scene that captures a calm, narrative atmosphere.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>14</b></li><li><span>Line Quality</span><b>13</b></li><li><span>Form Volume</span><b>12</b></li><li><span>Mood Expression</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559362/artwork/pifbat9zamwtikckjvwv.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559362/artwork/pifbat9zamwtikckjvwv.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Lifted Laughter Under a Passing Cloud</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">518<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">37<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1446.7</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">12.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a wonderful talent for capturing expressive, dynamic poses and heart-warming interactions that really tell a clear story. While your concepts and composition are strong, focusing on refining your line quality and double-checking your anatomical proportions will help your work feel more polished and intentional. Your artistic energy is very engaging, and with a bit more attention to detail in your execution, your pieces will become even more impactful.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The figures have a consistent style and an engaging, dynamic pose, despite the somewhat uneven line quality.</li><li>This piece has a strong, emotive composition that captures a sweet, genuine interaction between two figures.</li><li>The composition is clear and charming, although the figure anatomy and line quality are a bit shaky.</li><li>The line work is somewhat shaky, and the anatomical proportions and composition feel unfinished compared to the other submissions.</li><li>The gesture of the figures is captured with a charming, loose energy, but the rendering is incomplete.</li><li>It captures a dynamic, expressive pose with confident line work that feels lively and intentional.</li><li>The drawing successfully depicts an engaging human interaction with pleasing proportions and a clear narrative focus.</li><li>This piece has an endearing concept and clear composition, although the line quality is a bit tentative.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>12</b></li><li><span>Line Quality</span><b>13</b></li><li><span>Form Volume</span><b>10</b></li><li><span>Mood Expression</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559731/artwork/mpmgh77fhuvbrfeb4b8m.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559731/artwork/mpmgh77fhuvbrfeb4b8m.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Smile on the Ledge</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">526<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">36<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1442.6</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">12.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a clear talent for character design and creating readable, charming portraits that effectively capture a subject. To take your work to the next level, focus on building confidence in your line work and deepening your shading to give your figures more volume. With continued practice on anatomical precision, your natural sense of style will really begin to shine.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>It is a deliberate, finalized portrait that shows better anatomical control and shading application than the others.</li><li>The proportions are awkward, and the line work is hesitant, making the figure look quite stiff.</li><li>Pleasing character design with a clean, understated use of color.</li><li>It has a charming illustrative quality, though the anatomy in the arms and hands is a bit underdeveloped.</li><li>The drawing shows a solid understanding of proportions and creates a convincingly natural pose with subtle color application.</li><li>Displays a basic attempt at figure drawing, but the proportions and line quality are quite shaky.</li><li>While the figure is proportionate and readable, the overall shading and line work appear a bit hesitant and lack depth.</li><li>The anatomy of the figure is a bit stiff and the coloring feels somewhat tentative, though it remains a recognizable and readable attempt at a portrait.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>12</b></li><li><span>Form Volume</span><b>11</b></li><li><span>Mood Expression</span><b>15</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776540872/artwork/scbwvbfjs9damixbtxyy.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776540872/artwork/scbwvbfjs9damixbtxyy.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Young Karateka in Training</h3>
+            <div class="sub">by JoeK · full realism</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">534<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">35<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1438.4</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">12.0<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your work has a lovely, charming quality, and your ability to capture expressive poses and thoughtful compositions really shines through. To take your drawings to the next level, try to lean into more confident, defined linework and practice refining your anatomical proportions. With a bit more boldness in your technique, your delicate style will feel much more polished and complete.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>Includes anatomical errors and a very simple approach that feels unfinished compared to the other works.</li><li>The drawing captures a clear pose and likeness, though the linework remains somewhat hesitant and simple.</li><li>An earnest attempt at figure drawing, though the overall composition and line work are quite faint and underdeveloped.</li><li>Delicate linework and soft coloring create a pleasant, charming composition, though the overall work feels somewhat unfinished.</li><li>It has a charming and delicate approach to sketching, though the proportions and perspective feel a bit hesitant throughout.</li><li>The drawing has a soft, illustrative quality with a well-composed figure that feels calm and thoughtful.</li><li>This captures a nice pose with gentle, expressive lines, though the anatomical proportions are slightly simplified.</li><li>It possesses a charming, soft quality with a nice attempt at conveying a specific scene, though it remains quite faint in its execution.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>12</b></li><li><span>Form Volume</span><b>11</b></li><li><span>Mood Expression</span><b>15</b></li><li><span>Value Light</span><b>10</b></li><li><span>Detail Texture</span><b>11</b></li><li><span>Composition Perspective</span><b>12</b></li><li><span>Overall Realism</span><b>12</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562930/artwork/kbbgfqwzbezxpfctp1l5.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776562930/artwork/kbbgfqwzbezxpfctp1l5.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Smiles: Two Child Portrait Studies</h3>
+            <div class="sub">by JoeK · full realism</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">551<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">33<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1425.9</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">14.0<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a natural talent for capturing expressive likenesses and using color in a way that feels charming and intentional. To take your work to the next level, try focusing on strengthening your structural foundation and line work to help your figures feel more grounded and confident. With a bit more practice on anatomy and consistent shading, your already appealing portraits will truly shine.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>While the effort to capture likeness is clear, the coloring and shading are uneven and lack depth.</li><li>The two portrait studies have an appealing soft approach, though the proportions appear slightly uneven.</li><li>The drawing feels unfinished and underdeveloped, with uneven application of color and uncertain line work.</li><li>The drawings lack structural form and have uneven application of color, appearing quite unfinished.</li><li>These portraits show a good attempt at layering color and capturing expressive faces, resulting in a charming and finished appearance.</li><li>Pleasant color usage and a sweet, gentle style, though the anatomy and proportions are quite rough.</li><li>While the proportions are illustrative, the use of color and shading shows a clear attempt at capturing personality and form.</li><li>While the color work captures a nice likeness, the application feels a bit hesitant compared to the other more confident sketches.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>15</b></li><li><span>Line Quality</span><b>14</b></li><li><span>Form Volume</span><b>13</b></li><li><span>Mood Expression</span><b>17</b></li><li><span>Value Light</span><b>12</b></li><li><span>Detail Texture</span><b>14</b></li><li><span>Composition Perspective</span><b>13</b></li><li><span>Overall Realism</span><b>14</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559636/artwork/nvocdn7z7ummdv1btb88.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559636/artwork/nvocdn7z7ummdv1btb88.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Figure with Companion Studies</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">590<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">28<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1402.8</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">11.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your confident, expressive linework gives your characters a wonderful sense of personality and charm. To take your work to the next level, try focusing more on your overall composition to ensure your pieces feel intentional and unified rather than scattered. With a bit more attention to structural balance and focal points, your natural drawing talent will really shine.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The gestural, confident linework creates an engaging and expressive character portrait.</li><li>Soft, expressive linework with a nice grasp of facial features and character personality.</li><li>The loose line work holds some charm, but the composition feels quite scattered and unfinished.</li><li>The sketches are technically competent but feel quite loose and unfinished, lacking a cohesive composition.</li><li>While the line work shows some confidence, the composition is disjointed and lacks a clear focal point.</li><li>This piece shows a confident, minimalist linework style that captures a relaxed human gesture quite effectively.</li><li>Expressive, gestural line work that captures likeness while maintaining a clean, charming sketchbook aesthetic.</li><li>The line quality is quite hesitant and the proportions appear noticeably distorted relative to the intended viewpoint.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>12</b></li><li><span>Line Quality</span><b>11</b></li><li><span>Form Volume</span><b>10</b></li><li><span>Mood Expression</span><b>14</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561208/artwork/lbz2gwrga2jprhieruwp.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776561208/artwork/lbz2gwrga2jprhieruwp.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Blue in the Winter Woods</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">593<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">28<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1397.7</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">13.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a wonderful sense of atmosphere and charm that gives your work a gentle, storybook quality. To take your art to the next level, try focusing on building more confidence in your linework and adding bolder shading to give your figures more depth and structure. With a bit more attention to anatomical proportions and a firmer hand in your application, your pieces will feel fully realized and impactful.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The drawing represents a gentle, clean effort, though the anatomy and proportions feel somewhat underdeveloped.</li><li>The drawing shows a decent attempt at composition and color, though the linework remains somewhat hesitant and scratchy.</li><li>While the character has an appealing expression, the light shading leaves the overall composition feeling rather unfinished.</li><li>The drawing feels unfinished, with very light pressure and a lack of depth compared to the other submissions.</li><li>A gentle and charming portrait that uses soft shading to establish an atmosphere.</li><li>The drawing feels unfinished and lacks depth, with uneven color application and proportions that do not feel fully realized.</li><li>The drawing has a gentle, storybook atmosphere, though the composition feels a bit unfinished.</li><li>The atmospheric attempt to integrate a human figure with a background shows ambition, despite inconsistent proportions.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>14</b></li><li><span>Form Volume</span><b>11</b></li><li><span>Mood Expression</span><b>16</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1743989201/artwork/vtfc49spusxpgq5kgrdn.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1743989201/artwork/vtfc49spusxpgq5kgrdn.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>“Ember Crown Gambit”</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">627<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">24<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1376.2</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">10.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a clear talent for character design and understanding facial structure, which gives your portraits a strong foundation. To take your work to the next level, try to be more deliberate and firm with your linework so that your details stand out more clearly. With a bit more confidence in your strokes and a cleaner finish, your drawings will become much more impactful and easy to read.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The proportions of the head and features feel a bit off, even though the shading attempt on the hair shows promise.</li><li>There is a nice focus on detail in the character&#x27;s features and clothing, though the sketch remains a bit loose.</li><li>This portrait exhibits the most confident line work and effective facial structure, showing promise in character portraiture.</li><li>Pleasant character sketch, but lacking in definition and complete rendering compared to the other entries.</li><li>The drawing is quite faint and lacks definition, making the overall composition difficult to read.</li><li>The drawing shows decent character design, but the lines are a bit faint and uncertain.</li><li>This sketch demonstrates a good grasp of facial structure and expressive anatomy, making it the most polished and convincing piece.</li><li>The drawing is quite faint and lacks definition, making it difficult to fully discern the intended form and details.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>12</b></li><li><span>Line Quality</span><b>9</b></li><li><span>Form Volume</span><b>8</b></li><li><span>Mood Expression</span><b>13</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559529/artwork/tel2siwarhz15s2xs0ua.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1776559529/artwork/tel2siwarhz15s2xs0ua.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Confidence in a Pink Coat</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">646<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">22<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1364.9</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">12.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is below average.</b>
+              Some clear strengths but room to grow.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your work has a lovely, minimalist charm and a natural sense of style that really makes your illustrations stand out. While your eye for gesture and composition is growing, try focusing more on the underlying anatomy and structural foundations to help your figures feel more solid and defined. With a bit more practice on your construction, your confident sense of line will truly shine.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>A charming and simple character sketch, though the anatomy and proportions are quite stylized and underdeveloped.</li><li>It is a charming and well-composed fashion illustration with a delicate, confident line style.</li><li>The drawing captures a graceful gesture with simple, elegant lines, though it remains a basic study.</li><li>The loose, sketchy approach has a certain charm, but the proportions and construction of the figure are quite shaky.</li><li>The proportions appear slightly awkward and the line work feels hesitant and lacklustre.</li><li>This piece shows a thoughtful use of line and color to create a complete and stylish illustration.</li><li>Minimalist style with nice color accents, though the anatomical proportions are quite abstracted.</li><li>The drawing feels structurally weak and unfinished, with line work that struggles to define the figure&#x27;s form or pose.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>13</b></li><li><span>Line Quality</span><b>12</b></li><li><span>Form Volume</span><b>10</b></li><li><span>Mood Expression</span><b>15</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1743291352/artwork/ijnyc2l0epgn8yuwe9gj.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1743291352/artwork/ijnyc2l0epgn8yuwe9gj.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Folded-Arms Smile</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">665<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">19<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1353.1</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">7.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the lower tier.</b>
+              Lots of growth opportunity — see the comparisons.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You clearly put a lot of effort into capturing this portrait, and your commitment to developing the shading and features is a great foundation to build on. To improve the final result, try focusing on refining your structural proportions and using more confident, deliberate line work to help the form stand out clearly. With a little more attention to planning your composition and steadying your strokes, your next piece will have much more clarity and depth.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The proportions of the face appear distorted and the line work is somewhat scratchy and unfinished compared to the other entries.</li><li>The depiction of the face shows some effort, but the overall structure and proportions are significantly distorted.</li><li>Very rough sketch with limited structural definition and uneven shading techniques.</li><li>The drawing represents a reasonable attempt at portraiture, but lacks depth and structural certainty in the features.</li><li>The proportions are disjointed, and the loose, scratchy line quality makes the image difficult to read clearly.</li><li>This piece shows a clear effort at capturing portraiture, though the structure feels a bit distorted and the shading is hesitant.</li><li>This piece shows the most care in shading and defining features on the subject&#x27;s face.</li><li>The composition feels a bit cramped and the pencil work is light and somewhat messy, making the overall form difficult to read.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>8</b></li><li><span>Line Quality</span><b>7</b></li><li><span>Form Volume</span><b>6</b></li><li><span>Mood Expression</span><b>10</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1744372153/artwork/kkscwmsbqpdxlyiglctf.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1744372153/artwork/kkscwmsbqpdxlyiglctf.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Quiet Resolve</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">666<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">19<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1351.7</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">9.75<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the lower tier.</b>
+              Lots of growth opportunity — see the comparisons.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>Your drawing shows a great eye for capturing a recognizable likeness and personality in your subject. While your expressive line work brings a lot of charm to the piece, you can continue to improve by focusing on developing more consistent facial proportions and intentional shading. Keep practicing, as your sincere approach to character is a wonderful foundation to build upon.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>Shows a decent attempt at portraiture with some expressive line work in the hair and clothing, despite some proportional awkwardness.</li><li>The drawing captures a recognizable facial expression, though the proportions and line work feel a bit tentative.</li><li>It is a charming and personal drawing with a clear focus on character features, despite somewhat uneven line work.</li><li>While it shows an attempt at portraiture, the structure remains uncertain and the proportions are largely undeveloped.</li><li>While the effort is sincere, the linework appears hesitant and lacks cohesive shading or anatomical structure.</li><li>It is a charming and personal drawing with a clear attempt at facial structure and figure work.</li><li>The drawing shows expressive line work and captures a clear facial expression despite the informal nature of the paper.</li><li>The drawing captures a recognizable likeness, although the proportions and overall control are a bit shaky.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>10</b></li><li><span>Line Quality</span><b>9</b></li><li><span>Form Volume</span><b>8</b></li><li><span>Mood Expression</span><b>12</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1743335647/artwork/blotf2oqh9i9bc0fczax.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1743335647/artwork/blotf2oqh9i9bc0fczax.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>“Tethered Launch Across Shattered Isles”</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">674<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">18<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1345.2</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">10.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the lower tier.</b>
+              Lots of growth opportunity — see the comparisons.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a wonderful imagination and a clear talent for world-building, as your creative concepts and sense of scale really bring your sci-fi landscapes to life. To take your work to the next level, try practicing steadier linework and more deliberate color layering to help give your scenes more depth and polish. Your creative ideas are strong, so continuing to refine these technical foundations will help those visions translate even more clearly on the page.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>It is a creative conceptual drawing, though hampered by somewhat messy coloring and inconsistent line quality.</li><li>The inclusion of color and an attempt at world-building creates a more complete scene than the simpler sketches.</li><li>This piece has an interesting, imaginative concept and some creative use of color layering, though the execution feels a bit rough.</li><li>Has an interesting imaginative concept, but is hampered by inconsistent perspective and murky color layering.</li><li>While the concept shows potential, the composition lacks depth and the linework is quite hesitant and shaky.</li><li>It presents an interesting sci-fi landscape composition, though the coloring and perspective feel a bit loose and underdeveloped.</li><li>The concept shows some creativity, but the linework is uneven and the overall composition lacks clear structure.</li><li>The colored pencil landscape has a creative sense of scale and world-building, despite the somewhat shaky execution.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>11</b></li><li><span>Line Quality</span><b>10</b></li><li><span>Form Volume</span><b>9</b></li><li><span>Mood Expression</span><b>12</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1743469150/artwork/rldosv7bcy6ahyrmxgkm.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1743469150/artwork/rldosv7bcy6ahyrmxgkm.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>“Street-corner Sovereign”</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">739<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">10<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1289.8</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">10.0<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the lower tier.</b>
+              Lots of growth opportunity — see the comparisons.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a clear talent for character design and are doing a great job capturing clothing and facial details. To take your work to the next level, focus on practicing your line confidence and studying anatomical proportions to give your drawings more depth and volume. Keep at it, as these technical skills will surely strengthen as you continue to sketch and experiment.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>The proportions are quite shaky and the pencil work lacks refinement or a clear sense of volume.</li><li>The proportions are quite uneven and the line quality is hesitant, resulting in a less refined final image.</li><li>This has a charming, deliberate pose, though the anatomical proportions and line weight are still clearly in the practice stage.</li><li>The drawing is quite simplistic and lacks definition in both form and proportions.</li><li>The piece showcases a decent attempt at portraiture and clothing detail, although the proportions of the face feel slightly stiff.</li><li>Despite the simple materials, the artist demonstrates a clear grasp of character design and proportion.</li><li>A charming, simple character sketch that demonstrates basic clothing and facial feature construction.</li><li>The line work here is shaky and lacks anatomical consistency, resulting in a somewhat flat overall appearance.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>11</b></li><li><span>Line Quality</span><b>9</b></li><li><span>Form Volume</span><b>8</b></li><li><span>Mood Expression</span><b>12</b></li></ul></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="img"><a href="https://res.cloudinary.com/djhpg0skf/image/upload/v1745187676/artwork/lgkvcfkglf47iuqutrtt.jpg" target="_blank">
+            <img src="https://res.cloudinary.com/djhpg0skf/image/upload/v1745187676/artwork/lgkvcfkglf47iuqutrtt.jpg" loading="lazy" alt=""></a></div>
+          <div class="body">
+            <h3>Moment in Her Hand</h3>
+            <div class="sub">by JoeK · quick sketch</div>
+            
+            <div class="stats">
+              <div class="stat"><span class="k">Cloud rank</span>
+                <span class="v">766<small>/824</small></span></div>
+              <div class="stat"><span class="k">Percentile</span>
+                <span class="v">7<small>th</small></span></div>
+              <div class="stat"><span class="k">ELO</span>
+                <span class="v">1263.9</span></div>
+              <div class="stat"><span class="k">Streamlit avg</span>
+                <span class="v">9.5<small>/20</small></span></div>
+            </div>
+            <div class="verdict"><b>Your piece is in the lower tier.</b>
+              Lots of growth opportunity — see the comparisons.</div>
+            <div class="fb"><h4>Consolidated jury feedback</h4>
+              <p>You have a wonderful talent for capturing expressive personalities and charming poses in your work. To take your art to the next level, try focusing on refining your line work and adding more definition to your proportions to help your sketches feel more complete. With a bit more attention to detail and confidence in your strokes, your clear sense of character will really shine.</p></div>
+            <details><summary>Per-round jury notes (8)</summary>
+              <ul class="rats"><li>While the character design is cute, the line work is slightly shaky and the overall construction lacks the refinement of the other pieces.</li><li>Charming and expressive sketch that captures a sense of personality despite its simple execution on a sticky note.</li><li>The pose is charming, though the proportions and line clarity are noticeably more tentative than the top entries.</li><li>A charming pencil sketch that, although simple, clearly conveys the character&#x27;s expression and pose.</li><li>The drawing is quite simplistic and lacks definition, leaving the proportions and features feeling underdeveloped.</li><li>The drawing is quite faint and lacks definition, making the pose and proportions difficult to interpret clearly.</li><li>This piece shows a clear attempt at capturing a specific pose and character design with consistent line weight and readable features.</li><li>The drawing feels unfinished and lacks definition, appearing more like a rough sketch than a completed work.</li></ul></details>
+            <details><summary>Streamlit per-criterion GPT scores</summary>
+              <ul class="crit"><li><span>Proportion</span><b>10</b></li><li><span>Line Quality</span><b>9</b></li><li><span>Form Volume</span><b>7</b></li><li><span>Mood Expression</span><b>12</b></li></ul></details>
+          </div>
+        </div></div>
+</div></body></html>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <clipPath id="canvas"><rect x="6" y="6" width="20" height="20" rx="1.5"/></clipPath>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dfe9fb"/>
+      <stop offset="1" stop-color="#f4f7fc"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9b35c"/>
+      <stop offset="1" stop-color="#b0862d"/>
+    </linearGradient>
+  </defs>
+  <!-- gilded frame -->
+  <rect x="2" y="2" width="28" height="28" rx="3.5" fill="url(#frame)"/>
+  <rect x="4.5" y="4.5" width="23" height="23" rx="2" fill="#8d6a24"/>
+  <!-- canvas + scene -->
+  <rect x="6" y="6" width="20" height="20" rx="1.5" fill="url(#sky)"/>
+  <g clip-path="url(#canvas)">
+    <circle cx="11" cy="12" r="2.8" fill="#f4b740"/>
+    <path d="M6 26 L6 21 L11.5 23.5 L16 18 L20 21.5 L26 18.5 L26 26 Z" fill="#6bbf86"/>
+    <path d="M6 26 L6 23.4 L10 24.8 L15 21.4 L20 24 L26 22 L26 26 Z" fill="#3f8f63"/>
+  </g>
+</svg>
