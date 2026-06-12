@@ -18,6 +18,12 @@ Parameters:
     Type: String
     Default: "*"
     Description: Allowed browser origin (set to your frontend URL in production).
+  GoogleClientId:
+    Type: String
+    Default: ""
+    Description: >
+      Google OAuth 2.0 Web client ID — the audience the API Lambda verifies the
+      browser's Google ID token against. Empty disables auth (anonymous-only).
 
 Globals:
   Function:
@@ -30,6 +36,7 @@ Globals:
         S3_BUCKET: !Ref AssetsBucket
         LLM_MODEL: !Ref LlmModel
         OPENROUTER_API_KEY: !Ref OpenRouterApiKey
+        GOOGLE_CLIENT_ID: !Ref GoogleClientId
 
 Resources:
   # ── Data ──────────────────────────────────────────────────────────────────
@@ -102,8 +109,8 @@ Resources:
     Properties:
       CorsConfiguration:
         AllowOrigins: [!Ref CorsOrigin]
-        AllowMethods: [GET, POST, OPTIONS]
-        AllowHeaders: [Content-Type]
+        AllowMethods: [GET, POST, DELETE, OPTIONS]
+        AllowHeaders: [Content-Type, Authorization]
 
 Outputs:
   ApiUrl:

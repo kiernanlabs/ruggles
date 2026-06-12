@@ -103,11 +103,12 @@ def ensure_bucket(name: str) -> None:
         "MaxAgeSeconds": 3000,
     }]})
 
-    # Public read for the two object prefixes the result page renders as plain
-    # static URLs: mirrored pool images (pool/) and consumer uploads (uploads/).
-    # The bucket is created with Block Public Access fully on, so first relax the
-    # two flags that would otherwise reject a public *policy* (the ACL-blocking
-    # flags stay on — we grant access via policy, not ACLs).
+    # Public read for the object prefixes the result/salon pages render as plain
+    # static URLs: mirrored pool images (pool/), transient consumer uploads
+    # (uploads/), and permanent signed-in salon images (users/). The bucket is
+    # created with Block Public Access fully on, so first relax the two flags
+    # that would otherwise reject a public *policy* (the ACL-blocking flags stay
+    # on — we grant access via policy, not ACLs).
     s3.put_public_access_block(Bucket=name, PublicAccessBlockConfiguration={
         "BlockPublicAcls": True,
         "IgnorePublicAcls": True,
@@ -124,6 +125,7 @@ def ensure_bucket(name: str) -> None:
             "Resource": [
                 f"arn:aws:s3:::{name}/pool/*",
                 f"arn:aws:s3:::{name}/uploads/*",
+                f"arn:aws:s3:::{name}/users/*",
             ],
         }],
     }))

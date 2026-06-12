@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My salon · Mini Art Salon</title>
+<meta name="description" content="Your own mini salon — every piece you've submitted, where the jury placed it, and how your work is tracking over time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;680&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="dot"></span> Mini Art Salon</a>
+    <div class="nav-links">
+      <a href="index.html">Rank yours</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="mysalon.html" class="active">My salon</a>
+      <span class="auth-slot"></span>
+    </div>
+  </nav>
+
+  <div id="root"><p class="muted">Loading…</p></div>
+
+  <footer class="foot"><a href="index.html">Rank another piece →</a></footer>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="auth.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const API_URL = window.API_URL || "https://gt5jcvia2l.execute-api.us-east-1.amazonaws.com";
+const POOL = "learntodraw";
+const $ = (id) => document.getElementById(id);
+
+function ordinalSuffix(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+function fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+// ── render is driven by auth state: signed out -> sign-in prompt; signed in ->
+// load the salon. MAS_AUTH.onChange fires now and on every sign in/out. ──
+// onChange fires immediately with the current user and again on every sign
+// in/out, so this is the single source of truth for what the page shows.
+let booted = false;
+MAS_AUTH.onChange((user) => {
+  if (!window.GOOGLE_CLIENT_ID) return renderDisabled();
+  if (!user) return renderSignedOut();
+  if (!booted) { booted = true; loadSalon(user); }
+});
+
+function renderDisabled() {
+  booted = false;
+  $("root").innerHTML = `<div class="panel"><p>Sign-in isn’t configured yet, so personal salons
+    aren’t available. You can still <a href="index.html">rank a piece anonymously</a>.</p></div>`;
+}
+
+function renderSignedOut() {
+  booted = false;
+  $("root").innerHTML = `
+    <header class="hero" style="padding:30px 0 18px">
+      <h1>Your own mini salon</h1>
+      <p class="lede">Sign in to keep every piece you submit — its placement, the jury’s notes,
+        and how your work tracks over time.</p>
+    </header>
+    <div class="panel" style="text-align:center">
+      <span class="label" style="text-align:center">Sign in to continue</span>
+      <div class="auth-slot" style="display:flex;justify-content:center;margin-top:10px"></div>
+    </div>`;
+  // Populate the freshly-inserted .auth-slot with the Google button.
+  if (window.MAS_AUTH && MAS_AUTH.refresh) MAS_AUTH.refresh();
+}
+
+async function loadSalon(user) {
+  $("root").innerHTML = `<p class="muted">Gathering your salon…</p>`;
+  try {
+    await MAS_AUTH.authedJson(`${API_URL}/me`);           // register/refresh profile
+    const data = await MAS_AUTH.authedJson(`${API_URL}/me/salon`);
+    renderSalon(user, data.pieces || []);
+  } catch (e) {
+    $("root").innerHTML = `<div class="panel"><p class="err">Couldn’t load your salon: ${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderSalon(user, pieces) {
+  const ranked = pieces.filter(p => !p.not_art && p.percentile != null);
+  const name = (user.name || "").split(" ")[0] || "there";
+  if (!pieces.length) {
+    $("root").innerHTML = `
+      <header class="hero" style="padding:30px 0 18px">
+        <h1>Welcome, ${esc(name)}</h1>
+        <p class="lede">Your salon is empty for now. Rank a piece and it’ll land here.</p>
+      </header>
+      <div class="panel" style="text-align:center">
+        <a class="btn" style="max-width:280px;margin:0 auto" href="index.html">Pop a piece in the salon</a>
+      </div>`;
+    return;
+  }
+
+  $("root").innerHTML = `
+    <header class="hero" style="padding:30px 0 14px">
+      <h1>${esc(name)}’s salon</h1>
+      <p class="lede">${pieces.length} piece${pieces.length === 1 ? "" : "s"} ·
+        ${ranked.length ? `best placement <b>${ordinal(Math.max.apply(null, ranked.map(p => p.percentile)))}</b> percentile` : "none ranked yet"}</p>
+    </header>
+    ${trendPanel(ranked)}
+    <div class="grid" id="salon-grid"></div>`;
+
+  const grid = $("salon-grid");
+  pieces.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "tile";
+    const placed = p.not_art || p.percentile == null;
+    el.innerHTML = `
+      <img class="thumb" src="${p.image_url || ""}" alt="" loading="lazy">
+      <div class="info">
+        ${placed
+          ? `<div class="pctl" style="font-size:16px">Set aside</div>`
+          : `<div class="pctl">${p.percentile}<sup>${ordinalSuffix(p.percentile)}</sup></div>`}
+        <div class="rank-badge">${placed ? "not ranked" : "percentile in the salon"} · ${esc(fmtDate(p.submitted_at))}</div>
+        <div class="links">
+          <a href="#" data-piece="${esc(p.piece_id)}">view ›</a>
+          <a href="#" class="del" data-del="${esc(p.piece_id)}" title="Remove">remove</a>
+        </div>
+      </div>`;
+    el.querySelector(".thumb").addEventListener("click", () => openLightbox(p.image_url,
+      placed ? `<b>your piece</b><br>set aside this time` :
+      `<b>your piece</b><br><span class="pct">${ordinal(p.percentile)}</span> percentile in the salon`));
+    el.querySelector("[data-piece]").addEventListener("click", (e) => { e.preventDefault(); viewPiece(p.piece_id); });
+    el.querySelector("[data-del]").addEventListener("click", (e) => { e.preventDefault(); delPiece(p.piece_id, el); });
+    grid.appendChild(el);
+  });
+}
+
+// ── percentile-over-time: a tiny inline SVG sparkline of placements, oldest to
+// newest. No chart library — just a polyline + dots over a 0–100 band. ──
+function trendPanel(ranked) {
+  if (ranked.length < 2) return "";
+  const pts = ranked.slice().sort((a, b) => (a.submitted_at || "").localeCompare(b.submitted_at || ""));
+  const W = 560, H = 120, padX = 8, padY = 12;
+  const n = pts.length;
+  const x = (i) => padX + (i * (W - 2 * padX)) / (n - 1);
+  const y = (v) => padY + (1 - v / 100) * (H - 2 * padY);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.percentile).toFixed(1)}`).join(" ");
+  const dots = pts.map((p, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(p.percentile).toFixed(1)}" r="3.5"></circle>`).join("");
+  return `
+    <div class="panel trend">
+      <span class="label">Your placements over time</span>
+      <svg viewBox="0 0 ${W} ${H}" class="spark" preserveAspectRatio="none" role="img" aria-label="percentile over time">
+        <line x1="${padX}" y1="${y(50)}" x2="${W - padX}" y2="${y(50)}" class="mid"></line>
+        <path d="${line}" class="ln" fill="none"></path>
+        ${dots}
+      </svg>
+      <div class="trend-axis"><span>oldest</span><span>newest</span></div>
+    </div>`;
+}
+
+// ── one piece's full detail: hero + feedback + the jury rounds (each opens the
+// shared comparison modal, loaded with an authed fetch since salons are private). ──
+async function viewPiece(pieceId) {
+  $("root").innerHTML = `<p class="muted">Loading piece…</p>`;
+  let p;
+  try {
+    p = await MAS_AUTH.authedJson(`${API_URL}/me/salon/${encodeURIComponent(pieceId)}`);
+  } catch (e) {
+    $("root").innerHTML = `<div class="panel"><p class="err">Couldn’t load: ${esc(e.message)}</p>
+      <button class="btn ghost" onclick="location.reload()">← Back to salon</button></div>`;
+    return;
+  }
+  const summary = p.comparisons || [];
+  const placed = p.not_art || p.percentile == null;
+  $("root").innerHTML = `
+    <p class="crumb"><a href="#" id="back">‹ My salon</a></p>
+    <div class="panel">
+      <div class="result-hero">
+        <img id="hero-img" class="art zoomable" src="${p.image_url || ""}" alt="">
+        <div class="body">
+          <div class="headline">${esc(p.headline && p.headline.headline || "Your piece")}</div>
+          ${placed ? `<div class="subline" style="margin-top:8px">${esc(p.headline && p.headline.subline || "The jury set this one aside.")}</div>`
+            : `<div class="score">${p.percentile}<sup>${ordinalSuffix(p.percentile)}</sup></div>
+               <div class="score-label">percentile in the salon</div>
+               <div class="meter"><div class="grad"></div>
+                 <div class="mark" style="left:calc(${p.percentile}% - 2px)"></div></div>`}
+          <div class="subline" style="margin-top:10px">Submitted ${esc(fmtDate(p.submitted_at))}</div>
+        </div>
+      </div>
+      ${p.feedback ? `<div class="feedback"><b>What the jury said:</b><br>${esc(p.feedback)}</div>` : ""}
+      ${summary.length ? `
+        <h2 class="section-h">How the jury saw it <span class="muted">· ${summary.length} rounds</span></h2>
+        <div class="cmp-list">${summary.map(c => `
+          <div class="cmp-entry"><div class="cmp-row">
+            <span class="info">Round <b>${c.cmp_id}</b>${c.phase ? ` · ${esc(c.phase)}` : ""} ·
+              ${c.flagged_not_art ? `<span class="na">set aside</span>` : `placed <b>${c.rank ?? "—"}/${c.size}</b>`}</span>
+            ${rangeBar(c.min_pctl, c.max_pctl, placed ? null : p.percentile, c.avg_pctl)}
+            <a href="#" data-cmp="${c.cmp_id}">details ›</a>
+          </div></div>`).join("")}</div>` : ""}
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn ghost" id="back2">← Back to salon</button>
+        <button class="btn ghost" id="del" style="color:var(--bad)">Remove from salon</button>
+      </div>
+    </div>`;
+
+  $("hero-img").addEventListener("click", () => openLightbox(p.image_url, `<b>your piece</b>`));
+  const back = () => { booted = false; const u = MAS_AUTH.user(); if (u) { booted = true; loadSalon(u); } };
+  $("back").addEventListener("click", (e) => { e.preventDefault(); back(); });
+  $("back2").addEventListener("click", back);
+  $("del").addEventListener("click", async () => {
+    if (!confirm("Remove this piece from your salon? This can’t be undone.")) return;
+    try {
+      await MAS_AUTH.authedJson(`${API_URL}/me/salon/${encodeURIComponent(pieceId)}`, { method: "DELETE" });
+      back();
+    } catch (e) { alert("Couldn’t remove: " + e.message); }
+  });
+  document.querySelectorAll('a[data-cmp]').forEach(a =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      openComparison(`${API_URL}/me/salon/${encodeURIComponent(pieceId)}/comparisons/${a.dataset.cmp}`,
+        { pool: POOL, fetcher: (url) => MAS_AUTH.authedJson(url) });
+    }));
+}
+
+async function delPiece(pieceId, el) {
+  if (!confirm("Remove this piece from your salon? This can’t be undone.")) return;
+  try {
+    await MAS_AUTH.authedJson(`${API_URL}/me/salon/${encodeURIComponent(pieceId)}`, { method: "DELETE" });
+    el.remove();
+  } catch (e) { alert("Couldn’t remove: " + e.message); }
+}
+</script>
+</body>
+</html>

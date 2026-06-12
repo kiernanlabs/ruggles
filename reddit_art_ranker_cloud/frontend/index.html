@@ -18,6 +18,8 @@
     <a class="brand" href="index.html"><span class="dot"></span> Mini Art Salon</a>
     <div class="nav-links">
       <a href="index.html" class="active">Rank yours</a>
+      <a href="gallery.html">Gallery</a>
+      <span class="auth-slot"></span>
     </div>
   </nav>
 
@@ -58,9 +60,12 @@
 
 </div>
 
+<script src="config.js"></script>
 <script src="app.js"></script>
+<script src="auth.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-// Live API (from infra/deploy_app.py output). Override via window.API_URL.
+// Live API (set in config.js). Override via window.API_URL.
 const API_URL = window.API_URL || "https://gt5jcvia2l.execute-api.us-east-1.amazonaws.com";
 // v2 runs a single, fixed pool — no picker, no pool references in the UI.
 const POOL = "learntodraw";
@@ -125,9 +130,13 @@ async function submit() {
     if (!put.ok) throw new Error(`upload failed (${put.status})`);
     setBar(22);
 
-    // Single fixed pool; no title is collected or shown.
+    // Single fixed pool; no title is collected or shown. When signed in, attach
+    // the Google token so the finished result is saved to the user's salon.
+    const subHeaders = { "Content-Type": "application/json" };
+    const tok = window.MAS_AUTH && MAS_AUTH.token();
+    if (tok) subHeaders["Authorization"] = "Bearer " + tok;
     const sub = await apiJson(`${API_URL}/submissions`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST", headers: subHeaders,
       body: JSON.stringify({ pool: POOL, image_key: up.image_key }),
     });
 
@@ -223,6 +232,7 @@ function render(res, jobId) {
           </div>
         </div>
         ${comparisonsHtml(res)}
+        ${salonNote()}
         <button class="btn ghost" style="margin-top:18px" onclick="location.reload()">↑ Try another piece</button>
       </div>`;
     wireResult();
@@ -247,10 +257,18 @@ function render(res, jobId) {
       </div>
       ${res.feedback ? `<div class="feedback"><b>What the jury said:</b><br>${esc(res.feedback)}</div>` : ""}
       ${comparisonsHtml(res)}
+      ${salonNote()}
       <button class="btn ghost" style="margin-top:18px" onclick="location.reload()">↑ Rank another piece</button>
     </div>`;
   wireResult();
   loadOwnRationales(res);
+}
+
+// Signed-in submissions are saved to the user's salon by the worker; point them to it.
+function salonNote() {
+  return (window.MAS_AUTH && MAS_AUTH.user())
+    ? `<p class="muted" style="margin-top:16px">✓ Saved to your salon — <a href="mysalon.html">see your pieces over time ›</a></p>`
+    : "";
 }
 
 function ordinalSuffix(n) {

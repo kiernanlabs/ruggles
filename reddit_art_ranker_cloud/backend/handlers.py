@@ -24,10 +24,11 @@ from shared.config import (
     INSERTION_GROUPS,
     LLM_MODEL,
     S3_BUCKET,
+    USER_ASSET_PREFIX,
     WORKER_FUNCTION,
 )
 from shared.pools import POOLS, get_pool
-from . import ddb, feedback
+from . import auth, ddb, feedback
 from .insert import insert
 
 _s3 = boto3.client("s3")
@@ -35,8 +36,8 @@ _lambda = boto3.client("lambda")
 
 _CORS = {
     "Access-Control-Allow-Origin": os.getenv("CORS_ORIGIN", "*"),
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
 }
 _ALLOWED_CT = {"image/jpeg", "image/png", "image/webp"}
 
@@ -58,7 +59,28 @@ def api_handler(event, context):
     if method == "OPTIONS":
         return _resp(200, {})
 
+    # The signed-in user (or None for anonymous). Public routes ignore it;
+    # /me* routes require it.
+    user = auth.identity_from_event(event)
+
     try:
+        # ── account + personal salon (auth required) ──
+        if path == "/me" and method == "GET":
+            return _require(user) or _get_me(user)
+        if path == "/me/salon" and method == "GET":
+            return _require(user) or _list_salon(user)
+        if path.startswith("/me/salon/"):
+            gate = _require(user)
+            if gate:
+                return gate
+            parts = path.split("/")  # ['', 'me', 'salon', <piece>, ...]
+            piece_id = parts[3]
+            if "/comparisons/" in path:
+                return _get_salon_comparison(user, piece_id, parts[5])
+            if method == "DELETE":
+                return _delete_salon_piece(user, piece_id)
+            return _get_salon_piece(user, piece_id)
+
         if method == "GET" and path == "/pools":
             return _get_pools()
         if method == "GET" and path.startswith("/pools/") and path.endswith("/pieces"):
@@ -73,7 +95,7 @@ def api_handler(event, context):
         if method == "POST" and path == "/uploads":
             return _create_upload(json.loads(event.get("body") or "{}"))
         if method == "POST" and path == "/submissions":
-            return _create_submission(json.loads(event.get("body") or "{}"))
+            return _create_submission(json.loads(event.get("body") or "{}"), user)
         if (method == "GET" and path.startswith("/submissions/")
                 and "/comparisons/" in path):
             parts = path.split("/")  # ['', 'submissions', <job>, 'comparisons', <id>]
@@ -228,7 +250,7 @@ def _create_upload(body: dict):
     return _resp(200, {"upload_url": url, "image_key": key, "content_type": content_type})
 
 
-def _create_submission(body: dict):
+def _create_submission(body: dict, user: dict | None = None):
     pool_id = body["pool"]
     get_pool(pool_id)  # validate
     image_key = body["image_key"]
@@ -237,7 +259,10 @@ def _create_submission(body: dict):
 
     # Public-ish read URL for the report (the object also stays presign-able).
     image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{image_key}"
-    ddb.create_job(job_id, pool_id, title, image_key, image_url, _now())
+    # Signed-in submissions are tagged so the worker promotes them into the
+    # user's permanent salon; anonymous submissions stay transient (TTL).
+    ddb.create_job(job_id, pool_id, title, image_key, image_url, _now(),
+                   user_sub=user["sub"] if user else None)
 
     _lambda.invoke(
         FunctionName=WORKER_FUNCTION,
@@ -257,13 +282,10 @@ def _get_submission(job_id: str):
     return _resp(200, job)
 
 
-def _get_submission_comparison(job_id: str, cmp_id: str):
-    """Detail for one round of a submission's jury comparisons (mirrors the pool
-    comparison endpoint's shape so the frontend renders it identically)."""
-    c = ddb.get_job_comparison(job_id, cmp_id)
-    if not c:
-        return _resp(404, {"error": "unknown comparison"})
-    return _resp(200, {
+def _cmp_payload(c: dict) -> dict:
+    """Shape a stored per-round comparison (job- or salon-scoped) into the
+    response the frontend's comparison modal expects."""
+    return {
         "comparison_id": c.get("comparison_id"),
         "phase": c.get("phase"),
         "model": c.get("model", ""),
@@ -272,7 +294,73 @@ def _get_submission_comparison(job_id: str, cmp_id: str):
         "size": c.get("size"),
         "overall_rationale": c.get("rationale", ""),
         "members": c.get("members", []),
+    }
+
+
+def _get_submission_comparison(job_id: str, cmp_id: str):
+    """Detail for one round of a submission's jury comparisons (mirrors the pool
+    comparison endpoint's shape so the frontend renders it identically)."""
+    c = ddb.get_job_comparison(job_id, cmp_id)
+    if not c:
+        return _resp(404, {"error": "unknown comparison"})
+    return _resp(200, _cmp_payload(c))
+
+
+# ── Account + personal salon ────────────────────────────────────────────────
+def _require(user: dict | None):
+    """Return a 401 response when no valid user; None to proceed."""
+    return None if user else _resp(401, {"error": "sign in required"})
+
+
+def _get_me(user: dict):
+    """Profile for the signed-in user; upserts it (first call after sign-in
+    registers the account)."""
+    ddb.upsert_user(user["sub"], user["email"], user["name"],
+                    user["picture"], _now())
+    return _resp(200, {
+        "sub": user["sub"], "email": user["email"],
+        "name": user["name"], "picture": user["picture"],
     })
+
+
+def _list_salon(user: dict):
+    """The user's salon: every ranked piece, newest first. Slim cards — the
+    timeline page plots percentile-over-time from these and links to detail."""
+    pieces = ddb.list_user_pieces(user["sub"])
+    pieces.sort(key=lambda p: p.get("submitted_at") or "", reverse=True)
+    slim = [{
+        "piece_id": p.get("piece_id"),
+        "image_url": p.get("image_url"),
+        "percentile": p.get("percentile"),
+        "not_art": bool(p.get("not_art")),
+        "headline": p.get("headline"),
+        "submitted_at": p.get("submitted_at"),
+        "pool_label": p.get("pool_label"),
+    } for p in pieces]
+    return _resp(200, {"pieces": slim, "count": len(slim)})
+
+
+def _get_salon_piece(user: dict, piece_id: str):
+    """One salon piece's full result (image, placement, feedback, the round
+    summary the detail page lazy-loads via /comparisons/<round>)."""
+    p = ddb.get_user_piece(user["sub"], piece_id)
+    if not p:
+        return _resp(404, {"error": "unknown piece"})
+    for k in ("pk", "sk", "user_sub", "type"):
+        p.pop(k, None)
+    return _resp(200, p)
+
+
+def _get_salon_comparison(user: dict, piece_id: str, cmp_id: str):
+    c = ddb.get_user_piece_comparison(user["sub"], piece_id, cmp_id)
+    if not c:
+        return _resp(404, {"error": "unknown comparison"})
+    return _resp(200, _cmp_payload(c))
+
+
+def _delete_salon_piece(user: dict, piece_id: str):
+    ddb.delete_user_piece(user["sub"], piece_id)
+    return _resp(200, {"ok": True, "deleted": piece_id})
 
 
 # ── Worker (asynchronous) ───────────────────────────────────────────────────
@@ -367,7 +455,51 @@ def worker_handler(event, context):
             "pool_label": pool_def.label,
         }
         ddb.update_job(job_id, status="done", result=enriched)
+
+        # Signed-in submission -> promote into the user's permanent salon.
+        if job.get("user_sub"):
+            _persist_to_salon(job["user_sub"], job_id, job, enriched, comparisons)
         return {"ok": True, "job_id": job_id}
     except Exception as e:  # noqa: BLE001
         ddb.update_job(job_id, status="error", error=str(e)[:500])
         return {"ok": False, "error": str(e)}
+
+
+def _persist_to_salon(user_sub: str, job_id: str, job: dict,
+                      enriched: dict, comparisons: list) -> None:
+    """Copy the (transient) upload to a permanent user-owned key and write the
+    finished result + its round comparisons under USER#<sub> with no TTL.
+
+    Best-effort: the public report already succeeded, so a salon-persist failure
+    is logged via the exception but must not fail the job."""
+    try:
+        src_key = job["image_key"]
+        ext = src_key.rsplit(".", 1)[-1] if "." in src_key else "jpg"
+        dest_key = f"{USER_ASSET_PREFIX}{user_sub}/{job_id}.{ext}"
+        try:
+            _s3.copy_object(
+                Bucket=S3_BUCKET,
+                CopySource={"Bucket": S3_BUCKET, "Key": src_key},
+                Key=dest_key,
+            )
+            image_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{dest_key}"
+        except Exception:  # noqa: BLE001 — fall back to the transient URL
+            dest_key, image_url = src_key, job["image_url"]
+
+        ddb.put_user_piece(user_sub, {
+            "piece_id": job_id,
+            "pool_id": enriched.get("pool_id"),
+            "pool_label": enriched.get("pool_label"),
+            "image_key": dest_key,
+            "image_url": image_url,
+            "percentile": enriched.get("percentile"),
+            "not_art": bool(enriched.get("not_art")),
+            "not_art_reason": enriched.get("not_art_reason", ""),
+            "headline": enriched.get("headline"),
+            "feedback": enriched.get("feedback", ""),
+            "comparisons": enriched.get("comparisons", []),
+            "submitted_at": job.get("created_at"),
+        })
+        ddb.put_user_piece_comparisons(user_sub, job_id, comparisons)
+    except Exception as e:  # noqa: BLE001 — never let salon-persist fail the job
+        print(f"[salon] persist failed for {user_sub}/{job_id}: {e}")

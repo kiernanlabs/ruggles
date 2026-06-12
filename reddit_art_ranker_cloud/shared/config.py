@@ -43,6 +43,16 @@ DDB_TABLE = os.getenv("DDB_TABLE", "ruggles-art-ranker")
 S3_BUCKET = os.getenv("S3_BUCKET", "ruggles-art-ranker-assets")
 WORKER_FUNCTION = os.getenv("WORKER_FUNCTION", "ruggles-art-ranker-worker")
 
+# ── Google Sign-In (direct GIS, no Cognito) ──────────────────────────────────
+# OAuth 2.0 *Web* client ID from Google Cloud Console. The API Lambda verifies
+# the browser's Google ID token against this audience. Unset => auth disabled
+# and the app stays fully anonymous (the existing transient-submission flow).
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+
+# S3 key prefix for permanent, user-owned salon images. Promoted from uploads/
+# (which is lifecycle-expired) when a signed-in user's submission finishes.
+USER_ASSET_PREFIX = "users/"
+
 # How long a finished submission/report record lives before DynamoDB TTL
 # reaps it (seconds). 30 days — enough for a user to revisit their result link.
 SUBMISSION_TTL_SECONDS = 30 * 24 * 3600

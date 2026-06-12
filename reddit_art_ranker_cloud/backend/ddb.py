@@ -134,8 +134,8 @@ def load_eligible_pool(pool_id: str) -> list[dict]:
 
 # ── Jobs (consumer submissions) ─────────────────────────────────────────────
 def create_job(job_id: str, pool_id: str, title: str, image_key: str,
-               image_url: str, created_at: str) -> None:
-    _t().put_item(Item=_nums({
+               image_url: str, created_at: str, user_sub: str | None = None) -> None:
+    item = {
         "pk": f"JOB#{job_id}",
         "sk": "META",
         "type": "job",
@@ -148,7 +148,12 @@ def create_job(job_id: str, pool_id: str, title: str, image_key: str,
         "progress": {"round": 0, "total": 0},
         "created_at": created_at,
         "ttl": int(time.time()) + SUBMISSION_TTL_SECONDS,
-    }))
+    }
+    # When a signed-in user submits, tag the job so the worker promotes the
+    # finished result into their (permanent) salon.
+    if user_sub:
+        item["user_sub"] = user_sub
+    _t().put_item(Item=_nums(item))
 
 
 def update_job(job_id: str, **fields) -> None:
@@ -199,3 +204,117 @@ def get_job_comparison(job_id: str, cmp_id) -> dict | None:
     resp = _t().get_item(Key={"pk": f"JOB#{job_id}", "sk": f"CMP#{cid:06d}"})
     item = resp.get("Item")
     return _floats(item) if item else None
+
+
+# ── Users + salons (Google sign-in) ──────────────────────────────────────────
+# Per-user items live under their own partition and carry NO ttl, so a signed-in
+# user's salon persists indefinitely (anonymous JOB# records still expire):
+#
+#   Profile      pk=USER#<sub>  sk=PROFILE
+#   Salon piece  pk=USER#<sub>  sk=PIECE#<piece_id>            (piece_id == job_id)
+#   Round detail pk=USER#<sub>  sk=CMP#<piece_id>#<round>      (per-round jury card)
+def upsert_user(sub: str, email: str, name: str, picture: str, now: str) -> None:
+    """Create or refresh a user's profile. created_at is stamped once; the rest
+    (and last_seen) refresh on every sign-in."""
+    _t().update_item(
+        Key={"pk": f"USER#{sub}", "sk": "PROFILE"},
+        UpdateExpression=(
+            "SET #type = :type, email = :email, #name = :name, "
+            "picture = :picture, last_seen = :now, "
+            "created_at = if_not_exists(created_at, :now)"
+        ),
+        ExpressionAttributeNames={"#type": "type", "#name": "name"},
+        ExpressionAttributeValues={
+            ":type": "user", ":email": email, ":name": name,
+            ":picture": picture, ":now": now,
+        },
+    )
+
+
+def get_user(sub: str) -> dict | None:
+    resp = _t().get_item(Key={"pk": f"USER#{sub}", "sk": "PROFILE"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def put_user_piece(sub: str, piece: dict) -> None:
+    """Persist one finished submission into the user's salon (no TTL)."""
+    _t().put_item(Item=_nums({
+        "pk": f"USER#{sub}",
+        "sk": f"PIECE#{piece['piece_id']}",
+        "type": "user_piece",
+        "user_sub": sub,
+        **piece,
+    }))
+
+
+def list_user_pieces(sub: str) -> list[dict]:
+    """Every piece in a user's salon (paginated)."""
+    items, kwargs = [], dict(
+        KeyConditionExpression=Key("pk").eq(f"USER#{sub}")
+        & Key("sk").begins_with("PIECE#"),
+    )
+    while True:
+        resp = _t().query(**kwargs)
+        items.extend(resp.get("Items", []))
+        if "LastEvaluatedKey" not in resp:
+            break
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+    return _floats(items)
+
+
+def get_user_piece(sub: str, piece_id: str) -> dict | None:
+    resp = _t().get_item(Key={"pk": f"USER#{sub}", "sk": f"PIECE#{piece_id}"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def put_user_piece_comparisons(sub: str, piece_id: str, comparisons: list) -> None:
+    """Persist a salon piece's per-round jury comparisons (no TTL — they live as
+    long as the piece). Same shape as the job comparisons so the frontend renders
+    them identically; keyed under the piece so a delete can sweep them."""
+    if not comparisons:
+        return
+    with _t().batch_writer() as batch:
+        for c in comparisons:
+            batch.put_item(Item=_nums({
+                "pk": f"USER#{sub}",
+                "sk": f"CMP#{piece_id}#{int(c['comparison_id']):06d}",
+                "type": "user_comparison",
+                "user_sub": sub,
+                "piece_id": piece_id,
+                **c,
+            }))
+
+
+def get_user_piece_comparison(sub: str, piece_id: str, cmp_id) -> dict | None:
+    try:
+        cid = int(cmp_id)
+    except (TypeError, ValueError):
+        return None
+    resp = _t().get_item(
+        Key={"pk": f"USER#{sub}", "sk": f"CMP#{piece_id}#{cid:06d}"})
+    item = resp.get("Item")
+    return _floats(item) if item else None
+
+
+def delete_user_piece(sub: str, piece_id: str) -> None:
+    """Remove a salon piece and all of its per-round comparison items.
+
+    (The promoted S3 image is left in place — the Lambda role intentionally has
+    no s3:DeleteObject; an orphaned object under users/ is harmless and cheap.)"""
+    rounds, kwargs = [], dict(
+        KeyConditionExpression=Key("pk").eq(f"USER#{sub}")
+        & Key("sk").begins_with(f"CMP#{piece_id}#"),
+        ProjectionExpression="sk",
+    )
+    while True:
+        resp = _t().query(**kwargs)
+        rounds.extend(resp.get("Items", []))
+        if "LastEvaluatedKey" not in resp:
+            break
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+    with _t().batch_writer() as batch:
+        batch.delete_item(Key={"pk": f"USER#{sub}", "sk": f"PIECE#{piece_id}"})
+        for r in rounds:
+            batch.delete_item(Key={"pk": f"USER#{sub}", "sk": r["sk"]})

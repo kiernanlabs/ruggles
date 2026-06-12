@@ -19,9 +19,10 @@
  * openComparison handles BOTH endpoint shapes identically:
  *   - pool comparisons   GET /pools/<pool>/comparisons/<id>
  *   - submission rounds  GET /submissions/<job>/comparisons/<round>
- * opts: { pool, currentPieceId } — `pool` builds the per-piece links; a member
- * whose piece_id === currentPieceId is marked "you're viewing this piece";
- * candidate members (is_candidate) get no link.
+ * opts: { pool, currentPieceId, fetcher } — `pool` builds the per-piece links;
+ * a member whose piece_id === currentPieceId is marked "you're viewing this
+ * piece"; candidate members (is_candidate) get no link. `fetcher(url)` overrides
+ * how the comparison is loaded (e.g. an authed fetch for private salon rounds).
  */
 (function () {
   "use strict";
@@ -165,7 +166,7 @@
     ov.classList.add("open");
     box.querySelector(".sb-x").addEventListener("click", closeComparison);
     try {
-      const c = await fetchComparison(url);
+      const c = await (opts.fetcher ? opts.fetcher(url) : fetchComparison(url));
       box.innerHTML = comparisonHtml(c, opts);
       box.querySelector(".sb-x").addEventListener("click", closeComparison);
       box.querySelectorAll(".sb-mem img").forEach((img, i) => {

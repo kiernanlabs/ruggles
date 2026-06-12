@@ -75,7 +75,9 @@ def build_zip() -> bytes:
          "--platform", "manylinux2014_x86_64",
          "--implementation", "cp", "--python-version", "3.12",
          "--only-binary=:all:", "--target", str(BUILD_DIR),
-         "openai>=1.40"],
+         "openai>=1.40",
+         # Google Sign-In: verify the browser's ID token in the API Lambda.
+         "google-auth>=2.0", "requests>=2.31"],
         check=True,
     )
 
@@ -161,6 +163,9 @@ def _common_env() -> dict:
         "S3_BUCKET": S3_BUCKET,
         "LLM_MODEL": LLM_MODEL,
         "OPENROUTER_API_KEY": os.getenv("OPENROUTER_API_KEY", ""),
+        # Google OAuth Web client ID — audience for ID-token verification.
+        # Empty => auth disabled (app stays anonymous). Set in ../.env.
+        "GOOGLE_CLIENT_ID": os.getenv("GOOGLE_CLIENT_ID", ""),
     }
 
 

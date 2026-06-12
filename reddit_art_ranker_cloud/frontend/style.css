@@ -83,6 +83,32 @@ a:hover { color: #a99dff; }
 .nav-links a:hover { color: var(--text); background: var(--panel); }
 .nav-links a.active { color: var(--text); background: var(--panel); }
 
+/* ── auth (Google sign-in chip / button) ────────────────────────────────── */
+.auth-slot { display: inline-flex; align-items: center; }
+.auth-btn-holder { display: inline-flex; align-items: center; min-height: 32px; }
+.auth-chip { display: inline-flex; align-items: center; gap: 8px; }
+.auth-chip img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--border-2); }
+.auth-chip a { color: var(--text-dim); font-size: 14px; font-weight: 500;
+  padding: 7px 12px; border-radius: 9px; }
+.auth-chip a:hover { color: var(--text); background: var(--panel); }
+.auth-out { background: none; border: 0; cursor: pointer; color: var(--text-faint);
+  font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; }
+.auth-out:hover { color: var(--text); background: var(--panel-2); }
+
+/* ── salon: percentile-over-time sparkline ──────────────────────────────── */
+.trend { padding: 18px 22px; }
+.trend .spark { width: 100%; height: 130px; display: block; margin-top: 6px; overflow: visible; }
+.trend .spark .ln { stroke: var(--accent); stroke-width: 2.5; vector-effect: non-scaling-stroke;
+  stroke-linecap: round; stroke-linejoin: round; }
+.trend .spark circle { fill: var(--accent); }
+.trend .spark .mid { stroke: var(--border-2); stroke-width: 1; stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke; }
+.trend-axis { display: flex; justify-content: space-between; font-size: 12px;
+  color: var(--text-faint); margin-top: 4px; }
+.tile .links .del { color: var(--text-faint); }
+.tile .links .del:hover { color: var(--bad); }
+
 /* ── hero ───────────────────────────────────────────────────────────────── */
 .hero { text-align: center; padding: 40px 0 30px; }
 .pill {
